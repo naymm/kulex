@@ -12,6 +12,10 @@ export default function SignupAccountTypeScreen() {
 
   const select = (id: (typeof ACCOUNT_TYPES)[number]['id']) => {
     setAccountType(id);
+    if (id === 'business') {
+      router.push('/signup/business');
+      return;
+    }
     router.push('/signup/country');
   };
 

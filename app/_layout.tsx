@@ -30,6 +30,7 @@ export default function RootLayout() {
         <Stack.Screen name="remessas" />
         <Stack.Screen name="scoring" />
         <Stack.Screen name="agent" />
+        <Stack.Screen name="business" />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

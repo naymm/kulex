@@ -3,15 +3,19 @@ import { useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { SignupShell } from '@/components/signup/SignupShell';
 import { SignupTextField } from '@/components/signup/SignupTextField';
+import { useSignup } from '@/contexts/signup-context';
 
 export default function SignupPasswordScreen() {
   const [password, setPassword] = useState('');
+  const { accountType } = useSignup();
 
   return (
     <SignupShell
       title="Crie a sua senha"
       buttonLabel="Continue"
-      onContinue={() => router.push('/signup/personal')}
+      onContinue={() =>
+        router.push(accountType === 'business' ? '/signup/pin' : '/signup/personal')
+      }
       scrollable>
       <SignupTextField
         label="Escolha uma senha"

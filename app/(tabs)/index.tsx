@@ -1,6 +1,7 @@
 import { AgentHomeScreen } from '@/components/agent/AgentHomeScreen';
+import { BusinessHomeScreen } from '@/components/business/BusinessHomeScreen';
 import { PersonalHomeScreen } from '@/components/home/PersonalHomeScreen';
-import { isAgentAccount } from '@/constants/accounts';
+import { isAgentAccount, isBusinessAccount } from '@/constants/accounts';
 import { useActiveAccount } from '@/contexts/AccountContext';
 
 export default function HomeScreen() {
@@ -8,6 +9,10 @@ export default function HomeScreen() {
 
   if (isAgentAccount(activeAccount)) {
     return <AgentHomeScreen />;
+  }
+
+  if (isBusinessAccount(activeAccount)) {
+    return <BusinessHomeScreen />;
   }
 
   return <PersonalHomeScreen />;

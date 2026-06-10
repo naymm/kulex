@@ -1,13 +1,23 @@
 import { Tabs, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { BottomTabBar } from '@/components/BottomTabBar';
-import { isAgentAccount } from '@/constants/accounts';
-import { AGENT_ONLY_ROUTES, PERSONAL_ONLY_ROUTES } from '@/constants/tab-bar';
+import {
+  isAgentAccount,
+  isBusinessAccount,
+  isPersonalAccount,
+} from '@/constants/accounts';
+import {
+  AGENT_ONLY_ROUTES,
+  BUSINESS_ONLY_ROUTES,
+  PERSONAL_ONLY_ROUTES,
+} from '@/constants/tab-bar';
 import { useActiveAccount } from '@/contexts/AccountContext';
 
 export default function TabLayout() {
   const { activeAccount, activeAccountId } = useActiveAccount();
   const isAgent = isAgentAccount(activeAccount);
+  const isBusiness = isBusinessAccount(activeAccount);
+  const isPersonal = isPersonalAccount(activeAccount);
   const router = useRouter();
   const segments = useSegments();
 
@@ -21,16 +31,24 @@ export default function TabLayout() {
     const onAgentOnlyTab = AGENT_ONLY_ROUTES.includes(
       currentTab as (typeof AGENT_ONLY_ROUTES)[number],
     );
+    const onBusinessOnlyTab = BUSINESS_ONLY_ROUTES.includes(
+      currentTab as (typeof BUSINESS_ONLY_ROUTES)[number],
+    );
 
-    if (isAgent && onPersonalOnlyTab) {
+    if (!isPersonal && onPersonalOnlyTab) {
       router.replace('/(tabs)');
       return;
     }
 
     if (!isAgent && onAgentOnlyTab) {
       router.replace('/(tabs)');
+      return;
     }
-  }, [activeAccountId, isAgent, router, segments]);
+
+    if (!isBusiness && onBusinessOnlyTab) {
+      router.replace('/(tabs)');
+    }
+  }, [activeAccountId, isAgent, isBusiness, isPersonal, router, segments]);
 
   return (
     <Tabs
@@ -43,15 +61,15 @@ export default function TabLayout() {
 
       <Tabs.Screen
         name="cards"
-        options={{ title: 'Cartão', href: isAgent ? null : undefined }}
+        options={{ title: 'Cartão', href: isPersonal ? undefined : null }}
       />
       <Tabs.Screen
         name="payments"
-        options={{ title: 'Pagamentos', href: isAgent ? null : undefined }}
+        options={{ title: 'Pagamentos', href: isPersonal ? undefined : null }}
       />
       <Tabs.Screen
         name="credito"
-        options={{ title: 'Crédito', href: isAgent ? null : undefined }}
+        options={{ title: 'Crédito', href: isPersonal ? undefined : null }}
       />
 
       <Tabs.Screen
@@ -67,7 +85,29 @@ export default function TabLayout() {
         options={{ title: 'Comissões', href: isAgent ? undefined : null }}
       />
 
-      <Tabs.Screen name="menu" options={{ title: isAgent ? 'Conta' : 'Menu' }} />
+      <Tabs.Screen
+        name="business-receber"
+        options={{ title: 'Receber', href: isBusiness ? undefined : null }}
+      />
+      <Tabs.Screen
+        name="business-facturacao"
+        options={{ title: 'Facturar', href: isBusiness ? undefined : null }}
+      />
+      <Tabs.Screen
+        name="business-credito"
+        options={{ title: 'Crédito', href: null }}
+      />
+      <Tabs.Screen
+        name="business-relatorios"
+        options={{ title: 'Relatórios', href: isBusiness ? undefined : null }}
+      />
+
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: isAgent || isBusiness ? 'Conta' : 'Menu',
+        }}
+      />
       <Tabs.Screen name="profile" options={{ href: null }} />
     </Tabs>
   );

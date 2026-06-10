@@ -20,5 +20,19 @@ export const AGENT_TAB_ITEMS: TabBarItem[] = [
   { routeName: 'menu', label: 'Conta' },
 ];
 
+export const BUSINESS_TAB_ITEMS: TabBarItem[] = [
+  { routeName: 'index', label: 'Início' },
+  { routeName: 'business-receber', label: 'Receber' },
+  { routeName: 'business-facturacao', label: 'Facturar', isCenter: true },
+  { routeName: 'business-relatorios', label: 'Relatórios' },
+  { routeName: 'menu', label: 'Conta' },
+];
+
 export const PERSONAL_ONLY_ROUTES = ['cards', 'payments', 'credito'] as const;
 export const AGENT_ONLY_ROUTES = ['agent-operacoes', 'agent-operar', 'agent-comissoes'] as const;
+export const BUSINESS_ONLY_ROUTES = [
+  'business-receber',
+  'business-facturacao',
+  'business-credito',
+  'business-relatorios',
+] as const;

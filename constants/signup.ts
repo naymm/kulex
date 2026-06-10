@@ -13,13 +13,13 @@ export const MONTHS_PT = [
   'Dezembro',
 ] as const;
 
-export type AccountType = 'personal' | 'agent';
+export type AccountType = 'personal' | 'agent' | 'business';
 
 export const ACCOUNT_TYPES: {
   id: AccountType;
   title: string;
   description: string;
-  icon: 'person-outline' | 'shield-checkmark-outline';
+  icon: 'person-outline' | 'shield-checkmark-outline' | 'storefront-outline';
 }[] = [
   {
     id: 'personal',
@@ -32,6 +32,12 @@ export const ACCOUNT_TYPES: {
     title: 'Conta Agente',
     description: 'Mesmos requisitos da conta pessoal, com KYC e PIN para operar como agente.',
     icon: 'shield-checkmark-outline',
+  },
+  {
+    id: 'business',
+    title: 'Conta Business',
+    description: 'Facturação, QR da loja, crédito de stock e relatórios para o seu negócio.',
+    icon: 'storefront-outline',
   },
 ];
 

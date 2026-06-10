@@ -13,14 +13,22 @@ import {
   MenuIcon,
   PagamentosArrowsIcon,
 } from '@/components/tab-icons';
-import { isAgentAccount } from '@/constants/accounts';
-import { AGENT_TAB_ITEMS, PERSONAL_TAB_ITEMS } from '@/constants/tab-bar';
+import {
+  isAgentAccount,
+  isBusinessAccount,
+} from '@/constants/accounts';
+import {
+  AGENT_TAB_ITEMS,
+  BUSINESS_TAB_ITEMS,
+  PERSONAL_TAB_ITEMS,
+} from '@/constants/tab-bar';
 import { useActiveAccount } from '@/contexts/AccountContext';
 
 const INACTIVE_COLOR = '#8E8E8E';
 const ACTIVE_COLOR = '#1A1A4E';
 const NAVY = '#1A1A4E';
 const GOLD = '#C9A227';
+const TEAL = '#2FB7A9';
 
 type TabBarProps = {
   state: {
@@ -40,15 +48,22 @@ type TabBarProps = {
 function TabIcon({
   routeName,
   focused,
-  isAgent,
+  accountKind,
 }: {
   routeName: string;
   focused: boolean;
-  isAgent: boolean;
+  accountKind: 'personal' | 'agent' | 'business';
 }) {
-  const color = focused ? (isAgent && routeName.startsWith('agent-') ? GOLD : ACTIVE_COLOR) : INACTIVE_COLOR;
+  const color =
+    focused && accountKind === 'agent' && routeName.startsWith('agent-')
+      ? GOLD
+      : focused && accountKind === 'business' && routeName.startsWith('business-')
+        ? TEAL
+        : focused
+          ? ACTIVE_COLOR
+          : INACTIVE_COLOR;
 
-  if (isAgent) {
+  if (accountKind === 'agent') {
     switch (routeName) {
       case 'index':
         return <InicioIcon color={color} />;
@@ -56,6 +71,21 @@ function TabIcon({
         return <Ionicons name="people-outline" size={24} color={color} />;
       case 'agent-comissoes':
         return <Ionicons name="stats-chart-outline" size={24} color={color} />;
+      case 'menu':
+        return <Ionicons name="person-circle-outline" size={24} color={color} />;
+      default:
+        return null;
+    }
+  }
+
+  if (accountKind === 'business') {
+    switch (routeName) {
+      case 'index':
+        return <InicioIcon color={color} />;
+      case 'business-receber':
+        return <Ionicons name="qr-code-outline" size={24} color={color} />;
+      case 'business-relatorios':
+        return <Ionicons name="bar-chart-outline" size={24} color={color} />;
       case 'menu':
         return <Ionicons name="person-circle-outline" size={24} color={color} />;
       default:
@@ -114,6 +144,32 @@ function PaymentsCenterTab({
   );
 }
 
+function BusinessCenterTab({
+  focused,
+  label,
+  onPress,
+}: {
+  focused: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={styles.centerTab}
+      accessibilityRole="button"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={label}>
+      <View style={styles.businessFab}>
+        <Ionicons name="receipt-outline" size={24} color="#FFFFFF" />
+      </View>
+      <Text style={[styles.centerLabel, focused && styles.businessCenterLabelFocused]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 function AgentCenterTab({
   focused,
   label,
@@ -157,7 +213,13 @@ export function BottomTabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const { activeAccount } = useActiveAccount();
   const isAgent = isAgentAccount(activeAccount);
-  const tabItems = isAgent ? AGENT_TAB_ITEMS : PERSONAL_TAB_ITEMS;
+  const isBusiness = isBusinessAccount(activeAccount);
+  const accountKind = isAgent ? 'agent' : isBusiness ? 'business' : 'personal';
+  const tabItems = isAgent
+    ? AGENT_TAB_ITEMS
+    : isBusiness
+      ? BUSINESS_TAB_ITEMS
+      : PERSONAL_TAB_ITEMS;
 
   return (
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 8) }]}>
@@ -192,6 +254,17 @@ export function BottomTabBar({ state, navigation }: TabBarProps) {
               );
             }
 
+            if (isBusiness) {
+              return (
+                <BusinessCenterTab
+                  key={item.routeName}
+                  focused={focused}
+                  label={item.label}
+                  onPress={onPress}
+                />
+              );
+            }
+
             return (
               <PaymentsCenterTab
                 key={item.routeName}
@@ -211,13 +284,20 @@ export function BottomTabBar({ state, navigation }: TabBarProps) {
               accessibilityState={{ selected: focused }}
               accessibilityLabel={item.label}>
               <View style={styles.iconSlot}>
-                <TabIcon routeName={item.routeName} focused={focused} isAgent={isAgent} />
+                <TabIcon routeName={item.routeName} focused={focused} accountKind={accountKind} />
               </View>
               <Text
                 style={[
                   styles.label,
                   focused && styles.labelFocused,
-                  focused && isAgent && item.routeName.startsWith('agent-') && styles.labelFocusedAgent,
+                  focused &&
+                    isAgent &&
+                    item.routeName.startsWith('agent-') &&
+                    styles.labelFocusedAgent,
+                  focused &&
+                    isBusiness &&
+                    item.routeName.startsWith('business-') &&
+                    styles.labelFocusedBusiness,
                 ]}>
                 {item.label}
               </Text>
@@ -267,6 +347,9 @@ const styles = StyleSheet.create({
   labelFocusedAgent: {
     color: GOLD,
   },
+  labelFocusedBusiness: {
+    color: TEAL,
+  },
   centerTab: {
     flex: 1,
     alignItems: 'center',
@@ -310,5 +393,22 @@ const styles = StyleSheet.create({
   agentCenterLabelFocused: {
     fontWeight: '700',
     color: GOLD,
+  },
+  businessFab: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: TEAL,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: TEAL,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  businessCenterLabelFocused: {
+    fontWeight: '700',
+    color: TEAL,
   },
 });

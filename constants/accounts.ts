@@ -60,6 +60,14 @@ export function isAgentAccount(account: KulexAccount): boolean {
   return account.kind === 'agent';
 }
 
+export function isBusinessAccount(account: KulexAccount): boolean {
+  return account.kind === 'business';
+}
+
+export function isPersonalAccount(account: KulexAccount): boolean {
+  return account.kind === 'personal';
+}
+
 export function parseAccountBalance(balance: string): number {
   const cleaned = balance.replace(/\s*kz/gi, '').trim();
   const normalized = cleaned.replace(/\./g, '').replace(',', '.');
