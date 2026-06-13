@@ -79,15 +79,6 @@ export const AGENT_COMMISSION_BALANCE = '48.750,00 kz';
 
 export const AGENT_OPERATION_ACTIONS: AgentOperationAction[] = [
   {
-    id: 'activar',
-    title: 'Abertura de conta',
-    subtitle: 'Abertura com KYC',
-    icon: 'person-add-outline',
-    iconBg: '#EEF0F8',
-    iconColor: '#1A1A4E',
-    href: '/agent/activar-cliente',
-  },
-  {
     id: 'carregar',
     title: 'Carregar',
     subtitle: 'Cash-in para cliente',
@@ -106,13 +97,13 @@ export const AGENT_OPERATION_ACTIONS: AgentOperationAction[] = [
     href: '/agent/levantar',
   },
   {
-    id: 'comissoes',
-    title: 'Comissões',
-    subtitle: 'Hoje, semana, mês',
-    icon: 'stats-chart-outline',
-    iconBg: '#FFFBEB',
-    iconColor: '#C9A227',
-    href: '/agent/comissoes',
+    id: 'activar',
+    title: 'Abertura de conta',
+    subtitle: 'Abertura com KYC',
+    icon: 'person-add-outline',
+    iconBg: '#EEF0F8',
+    iconColor: '#1A1A4E',
+    href: '/agent/activar-cliente',
   },
 ];
 

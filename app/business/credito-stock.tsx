@@ -18,7 +18,12 @@ export default function BusinessCreditoStockScreen() {
         <AddMoneyPrimaryButton
           label="Solicitar"
           disabled={!amountDigits || amountDigits === '0'}
-          onPress={() => router.back()}
+          onPress={() =>
+            router.push({
+              pathname: '/business/credito-stock-sucesso',
+              params: { amount: amountFormatted },
+            })
+          }
         />
       }>
       <View style={styles.infoCard}>

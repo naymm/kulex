@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: NAVY,
     paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   headerContent: {
     flexDirection: 'row',

@@ -20,6 +20,10 @@ export function getScoreBand(score: number): ScoreBand {
   return band ?? SCORE_BANDS[0];
 }
 
+export function getScoreColor(score: number): string {
+  return getScoreBand(score).color;
+}
+
 export function getScoreProgress(score: number): number {
   const clamped = Math.min(KULEX_SCORE_MAX, Math.max(KULEX_SCORE_MIN, score));
   return (clamped - KULEX_SCORE_MIN) / (KULEX_SCORE_MAX - KULEX_SCORE_MIN);

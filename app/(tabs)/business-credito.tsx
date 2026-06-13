@@ -49,16 +49,13 @@ export default function BusinessCreditoTabScreen() {
           <Row label="Próxima renovação" value={BUSINESS_STOCK_CREDIT.nextRenewal} last />
         </View>
 
-        <Text style={styles.infoText}>
-          A linha de crédito é garantida pelo fluxo de caixa da loja. Utilize para reforço de
-          stock e capital de giro operacional.
-        </Text>
+        <Text style={styles.infoText}>{BUSINESS_STOCK_CREDIT.description}</Text>
 
         <Pressable
           style={styles.primaryBtn}
           accessibilityRole="button"
           onPress={() => router.push('/business/credito-stock')}>
-          <Text style={styles.primaryBtnText}>Solicitar utilização</Text>
+          <Text style={styles.primaryBtnText}>Solicitar crédito de stock</Text>
         </Pressable>
       </ScrollView>
     </View>

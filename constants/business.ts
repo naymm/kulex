@@ -54,6 +54,8 @@ export const BUSINESS_MONTHLY_SUMMARY = {
 };
 
 export const BUSINESS_STOCK_CREDIT = {
+  id: 'stock',
+  label: 'Crédito de stock',
   preApprovedLimit: '2.000.000,00 kz',
   available: '1.450.000,00 kz',
   used: '550.000,00 kz',
@@ -61,7 +63,12 @@ export const BUSINESS_STOCK_CREDIT = {
   termDays: 60,
   nextRenewal: '15 Jul 2026',
   status: 'Pré-aprovado',
+  description:
+    'Linha de capital de giro garantida pelo fluxo de caixa da loja. Exclusivo para reforço de stock.',
 };
+
+/** Único produto de crédito disponível para contas Business */
+export const BUSINESS_CREDIT_PRODUCTS = [BUSINESS_STOCK_CREDIT] as const;
 
 export const VAT_REGIMES: { id: VatRegime; label: string; rate: number }[] = [
   { id: 'general', label: 'Regime geral', rate: 14 },
@@ -258,6 +265,13 @@ export const BUSINESS_REPORTS = [
     subtitle: 'Projecção a 3 meses',
     icon: 'trending-up-outline' as IoniconName,
     href: '/business/relatorios/fluxo-caixa',
+  },
+  {
+    id: 'grafico-gastos',
+    title: 'Gráfico de Gastos',
+    subtitle: 'Despesas por categoria',
+    icon: 'pie-chart-outline' as IoniconName,
+    href: '/business/relatorios/grafico-gastos',
   },
 ];
 

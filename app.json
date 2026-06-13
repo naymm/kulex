@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logoblack.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
@@ -24,7 +24,7 @@
     },
     "android": {
       "splash": {
-        "image": "./assets/images/logoblack.png",
+        "image": "./assets/images/splash-icon.png",
         "resizeMode": "contain",
         "backgroundColor": "#FFFFFF"
       },
@@ -40,10 +40,20 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logoblack.png",
-          "imageWidth": 220,
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#FFFFFF"
+          "backgroundColor": "#FFFFFF",
+          "ios": {
+            "image": "./assets/images/logoblack.png",
+            "imageWidth": 220,
+            "enableFullScreenImage_legacy": true
+          },
+          "android": {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 170,
+            "backgroundColor": "#FFFFFF"
+          }
         }
       ],
       "expo-font",
@@ -53,6 +63,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7e50ef3a-9f5d-4789-89eb-713633ea500b"
+      }
     }
   }
 }

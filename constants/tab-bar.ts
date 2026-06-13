@@ -24,7 +24,7 @@ export const BUSINESS_TAB_ITEMS: TabBarItem[] = [
   { routeName: 'index', label: 'Início' },
   { routeName: 'business-receber', label: 'Receber' },
   { routeName: 'business-facturacao', label: 'Facturar', isCenter: true },
-  { routeName: 'business-relatorios', label: 'Relatórios' },
+  { routeName: 'business-servicos', label: 'Serviços' },
   { routeName: 'menu', label: 'Conta' },
 ];
 
@@ -34,5 +34,6 @@ export const BUSINESS_ONLY_ROUTES = [
   'business-receber',
   'business-facturacao',
   'business-credito',
+  'business-servicos',
   'business-relatorios',
 ] as const;

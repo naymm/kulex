@@ -8,6 +8,7 @@ import {
 } from '@/components/add-money/AddMoneyShell';
 import { flagEmojiFromIso2 } from '@/constants/countries';
 import {
+  REMITTANCE_CORRIDOR_GROUPS,
   REMITTANCE_CORRIDORS,
   REMITTANCE_PAYOUT_LABELS,
   type RemittanceCorridor,
@@ -24,6 +25,17 @@ export default function RemessaDestinoScreen() {
   const corridor = useMemo(
     () => REMITTANCE_CORRIDORS.find((item) => item.id === corridorId),
     [corridorId],
+  );
+
+  const corridorGroups = useMemo(
+    () =>
+      REMITTANCE_CORRIDOR_GROUPS.map((group) => ({
+        ...group,
+        corridors: group.corridorIds
+          .map((id) => REMITTANCE_CORRIDORS.find((item) => item.id === id))
+          .filter((item): item is RemittanceCorridor => Boolean(item)),
+      })),
+    [],
   );
 
   const canContinue = Boolean(corridor && payoutMethod);
@@ -50,19 +62,27 @@ export default function RemessaDestinoScreen() {
       }>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Text style={styles.sectionLabel}>País de destino</Text>
-        <View style={styles.list}>
-          {REMITTANCE_CORRIDORS.map((item) => (
-            <CorridorRow
-              key={item.id}
-              item={item}
-              selected={corridorId === item.id}
-              onPress={() => {
-                setCorridorId(item.id);
-                setPayoutMethod(null);
-              }}
-            />
-          ))}
-        </View>
+        {corridorGroups.map((group, groupIndex) => (
+          <View
+            key={group.id}
+            style={[styles.groupBlock, groupIndex > 0 && styles.groupBlockSpacing]}>
+            <Text style={styles.groupTitle}>{group.title}</Text>
+            <Text style={styles.groupSubtitle}>{group.subtitle}</Text>
+            <View style={styles.list}>
+              {group.corridors.map((item) => (
+                <CorridorRow
+                  key={item.id}
+                  item={item}
+                  selected={corridorId === item.id}
+                  onPress={() => {
+                    setCorridorId(item.id);
+                    setPayoutMethod(null);
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+        ))}
 
         {corridor ? (
           <>
@@ -136,6 +156,23 @@ const styles = StyleSheet.create({
   },
   sectionSpacing: {
     marginTop: 28,
+  },
+  groupBlock: {
+    gap: 8,
+  },
+  groupBlockSpacing: {
+    marginTop: 24,
+  },
+  groupTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  groupSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: 'rgba(255,255,255,0.55)',
+    marginBottom: 4,
   },
   rateHint: {
     fontSize: 13,

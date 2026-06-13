@@ -84,8 +84,8 @@ function TabIcon({
         return <InicioIcon color={color} />;
       case 'business-receber':
         return <Ionicons name="qr-code-outline" size={24} color={color} />;
-      case 'business-relatorios':
-        return <Ionicons name="bar-chart-outline" size={24} color={color} />;
+      case 'business-servicos':
+        return <Ionicons name="flash-outline" size={24} color={color} />;
       case 'menu':
         return <Ionicons name="person-circle-outline" size={24} color={color} />;
       default:

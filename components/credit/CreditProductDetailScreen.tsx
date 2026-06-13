@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CreditProductDetailConfig } from '@/constants/credit-products-detail';
+import { useRedirectBusinessFromPersonalCredit } from '@/hooks/useRedirectBusinessFromPersonalCredit';
 
 const NAVY = '#1A1A4E';
 
@@ -13,6 +14,9 @@ type Props = {
 export function CreditProductDetailScreen({ detail }: Props) {
   const insets = useSafeAreaInsets();
   const hasDocuments = detail.documents.length > 0;
+  const isBusiness = useRedirectBusinessFromPersonalCredit();
+
+  if (isBusiness) return null;
 
   return (
     <View style={styles.container}>

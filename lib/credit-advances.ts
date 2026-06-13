@@ -1,13 +1,19 @@
 import { ADIANTAMENTO_CREDIT } from '@/constants/credit-line';
 import { formatMoneyAmount, parseMoneyAmount } from '@/lib/postpaid-bill';
 
-export type CreditAdvanceCategory = 'servico' | 'referencia' | 'estado' | 'seguro';
+export type CreditAdvanceCategory =
+  | 'servico'
+  | 'referencia'
+  | 'estado'
+  | 'seguro'
+  | 'qrcode';
 
 export const CREDIT_ADVANCE_CATEGORY_LABELS: Record<CreditAdvanceCategory, string> = {
   servico: 'Pagamento de Serviço',
   referencia: 'Pagamento Por Referência',
   estado: 'Pagamento ao Estado',
   seguro: 'Seguro',
+  qrcode: 'Pagamento QR Code',
 };
 
 export type CreditAdvance = {

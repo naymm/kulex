@@ -95,6 +95,10 @@ export default function PaymentsScreen() {
             category={category}
             last={index === PAYMENT_CATEGORIES.length - 1}
             onPress={() => {
+              if (category.id === 'qrcode') {
+                router.push({ pathname: '/payments/qr-code', params: { from: 'payments' } });
+                return;
+              }
               if (category.id === 'referencia') {
                 router.push({ pathname: '/payments/referencia', params: { from: 'payments' } });
                 return;
@@ -188,7 +192,7 @@ function PaymentCategoryRow({
       onPress={onPress}>
       <View style={styles.categoryLeft}>
         <View style={styles.categoryIconWrap}>
-          <Ionicons name="cash-outline" size={18} color="#111827" />
+          <Ionicons name={category.icon} size={18} color="#111827" />
         </View>
         <View style={styles.categoryText}>
           <Text style={styles.categoryTitle}>{category.title}</Text>

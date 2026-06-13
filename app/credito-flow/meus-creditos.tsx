@@ -4,17 +4,21 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CreditoFlowHeader, NAVY } from '@/components/credito-flow/CreditoFlowHeader';
+import { useRedirectBusinessFromPersonalCredit } from '@/hooks/useRedirectBusinessFromPersonalCredit';
 import { getMeusCreditosItems } from '@/lib/credit-loans';
 
 export default function MeusCreditos() {
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState(getMeusCreditosItems);
+  const isBusiness = useRedirectBusinessFromPersonalCredit();
 
   useFocusEffect(
     useCallback(() => {
       setItems(getMeusCreditosItems());
     }, []),
   );
+
+  if (isBusiness) return null;
 
   return (
     <View style={styles.container}>

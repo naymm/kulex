@@ -1,11 +1,17 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Image,
+  useWindowDimensions,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  withRepeat,
   cancelAnimation,
   Easing,
   type SharedValue,
@@ -65,46 +71,13 @@ function ProgressBar({
 }
 
 function OnboardingSlidePage({ slide }: { slide: OnboardingSlide }) {
-  const scale = useSharedValue(1);
-  const translateY = useSharedValue(0);
-
-  useEffect(() => {
-    scale.value = 1;
-    translateY.value = 0;
-
-    scale.value = withRepeat(
-      withTiming(1.06, {
-        duration: ONBOARDING_SLIDE_DURATION_MS * 2.4,
-        easing: Easing.inOut(Easing.sin),
-      }),
-      -1,
-      true
-    );
-
-    translateY.value = withRepeat(
-      withTiming(-10, {
-        duration: ONBOARDING_SLIDE_DURATION_MS * 2.4,
-        easing: Easing.inOut(Easing.sin),
-      }),
-      -1,
-      true
-    );
-
-    return () => {
-      cancelAnimation(scale);
-      cancelAnimation(translateY);
-    };
-  }, [scale, slide.id, translateY]);
-
-  const backgroundStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { translateY: translateY.value }],
-  }));
+  const { width, height } = useWindowDimensions();
 
   return (
     <View style={styles.slide}>
-      <Animated.Image
+      <Image
         source={slide.background}
-        style={[styles.backgroundImage, backgroundStyle]}
+        style={[styles.backgroundImage, { width, height }]}
         resizeMode="cover"
       />
       <LinearGradient
@@ -238,7 +211,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   overlay: {
     ...StyleSheet.absoluteFill,

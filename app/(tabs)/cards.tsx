@@ -56,6 +56,20 @@ export default function CardsScreen() {
     return buildPostpaidBillSummary(postpaidMeta.plafond, postpaidMeta.available);
   }, [postpaidMeta]);
 
+  const walletCards = useMemo(
+    () =>
+      WALLET_CARDS.map((card) =>
+        card.kind === 'postpaid'
+          ? {
+              ...card,
+              plafond: postpaidWallet.plafond,
+              available: postpaidWallet.available,
+            }
+          : card,
+      ),
+    [postpaidWallet],
+  );
+
   const handleIncreasePlafond = (newPlafond: string) => {
     if (!postpaidMeta) return;
 
@@ -104,7 +118,7 @@ export default function CardsScreen() {
         ]}
         showsVerticalScrollIndicator={false}>
         <CardWalletCarousel
-          cards={WALLET_CARDS}
+          cards={walletCards}
           activeIndex={activeCardIndex}
           onActiveIndexChange={setActiveCardIndex}
           isFrozen={isPrepaid && isFrozen}
@@ -569,6 +583,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    display: 'none',
   },
   postpaidIcon: {
     width: 44,

@@ -12,7 +12,6 @@ import {
   type ListRenderItem,
 } from 'react-native';
 import { CardDetailsOverlay } from '@/components/cards/CardDetailsOverlay';
-import { CardTypeBadge } from '@/components/cards/CardTypeBadge';
 import { PostpaidCardPreview } from '@/components/cards/PostpaidCardPreview';
 import type { WalletCard } from '@/constants/card';
 import { WALLET_CARD_ASPECT } from '@/constants/card';
@@ -51,7 +50,11 @@ export function CardWalletCarousel({
   );
 
   const renderItem: ListRenderItem<WalletCard> = useCallback(
-    ({ item }) => (
+    ({ item }) => {
+      const displayAmount =
+        item.kind === 'prepaid' ? item.balance : item.available;
+
+      return (
       <View style={[styles.slide, { width: cardWidth + CARD_GAP }]}>
         <View style={[styles.cardShell, { width: cardWidth }]}>
           {item.kind === 'prepaid' ? (
@@ -70,8 +73,14 @@ export function CardWalletCarousel({
                 resizeMode="cover"
                 accessibilityIgnoresInvertColors
               />
-              <CardDetailsOverlay showDetails={false} cardWidth={cardWidth} dimmed={isFrozen} />
-              <CardTypeBadge label={item.typeLabel} cardWidth={cardWidth} />
+              <CardDetailsOverlay
+                cardNumber={item.cardNumber}
+                expiry={item.expiry}
+                typeLabel={item.typeLabel}
+                amount={displayAmount}
+                cardWidth={cardWidth}
+                dimmed={isFrozen}
+              />
               {isFrozen ? (
                 <View style={styles.frozenOverlay}>
                   <Ionicons name="snow" size={28} color="#FFFFFF" />
@@ -91,12 +100,19 @@ export function CardWalletCarousel({
                 height={cardHeight}
                 embedded
               />
-              <CardTypeBadge label={item.typeLabel} cardWidth={cardWidth} />
+              <CardDetailsOverlay
+                cardNumber={item.cardNumber}
+                expiry={item.expiry}
+                typeLabel={item.typeLabel}
+                amount={displayAmount}
+                cardWidth={cardWidth}
+              />
             </View>
           )}
         </View>
       </View>
-    ),
+      );
+    },
     [cardHeight, cardWidth, isFrozen],
   );
 

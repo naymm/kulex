@@ -46,7 +46,7 @@ export default function BusinessReceberTabScreen() {
         <Pressable
           style={styles.actionCard}
           accessibilityRole="button"
-          onPress={() => router.push('/(tabs)/payments')}>
+          onPress={() => router.push('/(tabs)/business-servicos')}>
           <View style={[styles.iconWrap, { backgroundColor: '#FEF3C7' }]}>
             <Ionicons name="flash-outline" size={28} color="#D97706" />
           </View>

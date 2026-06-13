@@ -1,5 +1,10 @@
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import {
+  DEFAULT_ACCOUNT_ID,
+  getAccountById,
+  type AccountKind,
+} from '@/constants/accounts';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -26,9 +31,70 @@ export type MenuSection = {
   items: MenuItem[];
 };
 
-import { DEFAULT_ACCOUNT_ID, getAccountById } from '@/constants/accounts';
-
 export const MENU_USER = getAccountById(DEFAULT_ACCOUNT_ID);
+
+/** Itens ocultos no menu da conta Agente */
+export const AGENT_HIDDEN_MENU_ITEM_IDS = new Set([
+  'kixikila',
+  'remessas',
+  'seguros',
+  'cartoes',
+  'credito',
+]);
+
+const BUSINESS_EXTRA_MENU_ITEMS: MenuItem[] = [
+  {
+    id: 'relatorios',
+    title: 'Relatórios',
+    subtitle: 'Extractos, facturas e exportação',
+    icon: 'bar-chart-outline',
+    action: { type: 'route', href: '/(tabs)/business-relatorios' },
+  },
+];
+
+const BUSINESS_MENU_ITEM_OVERRIDES: Record<string, Partial<MenuItem>> = {
+  'grafico-gastos': {
+    action: { type: 'route', href: '/business/relatorios/grafico-gastos' },
+  },
+  credito: {
+    title: 'Crédito de stock',
+    subtitle: 'Capital de giro para reforço de stock',
+    icon: 'cube-outline',
+    action: { type: 'route', href: '/(tabs)/business-credito' },
+  },
+};
+
+function applyBusinessMenuOverrides(section: MenuSection): MenuSection {
+  return {
+    ...section,
+    items: section.items.map((item) => {
+      const override = BUSINESS_MENU_ITEM_OVERRIDES[item.id];
+      return override ? { ...item, ...override } : item;
+    }),
+  };
+}
+
+export function getMenuSectionsForAccount(kind: AccountKind): MenuSection[] {
+  if (kind === 'agent') {
+    return MENU_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !AGENT_HIDDEN_MENU_ITEM_IDS.has(item.id)),
+    })).filter((section) => section.items.length > 0);
+  }
+
+  if (kind === 'business') {
+    return MENU_SECTIONS.map((section) => {
+      const mapped = applyBusinessMenuOverrides(section);
+      if (section.id !== 'conta') return mapped;
+      return {
+        ...mapped,
+        items: [...mapped.items, ...BUSINESS_EXTRA_MENU_ITEMS],
+      };
+    });
+  }
+
+  return MENU_SECTIONS;
+}
 
 export const MENU_SECTIONS: MenuSection[] = [
   {
@@ -48,6 +114,13 @@ export const MENU_SECTIONS: MenuSection[] = [
         subtitle: 'Consultar histórico da conta',
         icon: 'document-text-outline',
         action: { type: 'route', href: '/movimentos' },
+      },
+      {
+        id: 'grafico-gastos',
+        title: 'Gráfico de Gastos',
+        subtitle: 'Despesas por categoria',
+        icon: 'pie-chart-outline',
+        action: { type: 'route', href: '/movimentos/grafico-gastos' },
       },
       {
         id: 'verificacao',
@@ -112,11 +185,11 @@ export const MENU_SECTIONS: MenuSection[] = [
         action: { type: 'route', href: '/payments/seguros' },
       },
       {
-        id: 'cartao-pos',
-        title: 'Cartão Pós-pago',
-        subtitle: 'Solicitar Mastercard com plafond',
+        id: 'cartoes',
+        title: 'Cartões',
+        subtitle: 'Gerir cartões pré e pós-pago',
         icon: 'card-outline',
-        action: { type: 'route', href: '/cards/pos-pago' },
+        action: { type: 'route', href: '/(tabs)/cards' },
       },
       {
         id: 'credito',

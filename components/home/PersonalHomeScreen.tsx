@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeMoreMenu } from '@/components/home/HomeMoreMenu';
@@ -10,7 +10,7 @@ import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
 import { useActiveAccount } from '@/contexts/AccountContext';
 import { useCollapsibleHomeHeader } from '@/hooks/useCollapsibleHomeHeader';
 
-const HERO_HEIGHT = 108;
+const HERO_HEIGHT = 118;
 const UNREAD_NOTIFICATIONS = 2;
 
 const transactions = [
@@ -57,6 +57,7 @@ export function PersonalHomeScreen() {
     sheetLiftStyle,
     headerBorderStyle,
     expandedHeight,
+    onHeroLayout,
   } = useCollapsibleHomeHeader(insets, HERO_HEIGHT);
 
   const balanceDisplay = showBalance ? activeAccount.balance : '•••••••• kz';
@@ -101,7 +102,9 @@ export function PersonalHomeScreen() {
             </Pressable>
           </Animated.View>
 
-          <Animated.View style={[styles.heroContent, heroContentStyle]}>
+          <Animated.View
+            style={[styles.heroContent, heroContentStyle]}
+            onLayout={onHeroLayout}>
             <View style={styles.balanceSection}>
               <TouchableOpacity
                 style={styles.balanceLabel}
@@ -345,9 +348,12 @@ const styles = StyleSheet.create({
   },
   balanceAmount: {
     fontSize: 38,
+    lineHeight: 46,
     color: '#ffffff',
     fontWeight: '700',
     letterSpacing: 0.5,
+    textAlign: 'center',
+    ...(Platform.OS === 'android' ? { includeFontPadding: false } : {}),
   },
   quickActions: {
     flexDirection: 'row',
@@ -362,6 +368,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
+    marginTop: 28,
   },
   actionButton: {
     alignItems: 'center',

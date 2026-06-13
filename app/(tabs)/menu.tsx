@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AccountAvatar, AccountSwitcherSheet } from '@/components/menu/AccountSwitcherSheet';
 import { MenuRow } from '@/components/menu/MenuRow';
-import { MENU_SECTIONS, type MenuItem } from '@/constants/menu';
+import { getMenuSectionsForAccount, type MenuItem } from '@/constants/menu';
 import { useActiveAccount } from '@/contexts/AccountContext';
 import { logoutToLogin, pushFromMenu } from '@/lib/navigation';
 
@@ -65,6 +65,8 @@ export default function MenuScreen() {
     Alert.alert('Copiado', `ID ${activeAccount.membershipId} copiado para a área de transferência.`);
   };
 
+  const menuSections = getMenuSectionsForAccount(activeAccount.kind);
+
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
@@ -107,12 +109,12 @@ export default function MenuScreen() {
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.menuCard}>
-          {MENU_SECTIONS.map((section, sectionIndex) => (
+          {menuSections.map((section, sectionIndex) => (
             <View
               key={section.id}
               style={[
                 styles.section,
-                sectionIndex < MENU_SECTIONS.length - 1 && styles.sectionSpacing,
+                sectionIndex < menuSections.length - 1 && styles.sectionSpacing,
               ]}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
               {section.items.map((item, index) => {

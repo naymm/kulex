@@ -39,6 +39,9 @@ export type WalletPrepaidCard = {
   subtitle: string;
   typeLabel: CardTypeLabel;
   lastDigits: string;
+  cardNumber: string;
+  expiry: string;
+  balance: string;
 };
 
 export type WalletPostpaidCard = {
@@ -50,6 +53,8 @@ export type WalletPostpaidCard = {
   tierId: PostpaidCardTierId;
   plafond: string;
   available: string;
+  cardNumber: string;
+  expiry: string;
 };
 
 export type WalletCard = WalletPrepaidCard | WalletPostpaidCard;
@@ -87,6 +92,9 @@ export const WALLET_CARDS: WalletCard[] = [
     subtitle: 'Mastercard',
     typeLabel: 'Pré-pago',
     lastDigits: '1123',
+    cardNumber: CARD_NUMBER_MASKED,
+    expiry: CARD_EXPIRY,
+    balance: CARD_BALANCE,
   },
   {
     id: 'postpaid-black',
@@ -97,5 +105,7 @@ export const WALLET_CARDS: WalletCard[] = [
     tierId: POSTPAID_BLACK_CARD.tierId,
     plafond: POSTPAID_BLACK_CARD.plafond,
     available: POSTPAID_BLACK_CARD.available,
+    cardNumber: '****  ****  ****  8842',
+    expiry: '08/29',
   },
 ];

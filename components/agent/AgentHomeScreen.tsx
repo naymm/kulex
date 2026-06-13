@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
   Pressable,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,8 +33,7 @@ import { getUnreadNotificationCount } from '@/lib/agent';
 
 const NAVY = '#1A1A4E';
 const GOLD = '#C9A227';
-const HERO_HEIGHT = 108;
-const HERO_CAROUSEL_HEIGHT = 72;
+const HERO_HEIGHT = 118;
 
 const AGENT_MORE_MENU_ITEMS: HomeMoreMenuItem[] = [
   { id: 'historico', label: 'Histórico', icon: 'time-outline' },
@@ -66,6 +66,7 @@ export function AgentHomeScreen() {
     sheetLiftStyle,
     headerBorderStyle,
     expandedHeight,
+    onHeroLayout,
   } = useCollapsibleHomeHeader(insets, HERO_HEIGHT);
 
   useFocusEffect(
@@ -122,14 +123,15 @@ export function AgentHomeScreen() {
             </Pressable>
           </Animated.View>
 
-          <Animated.View style={[styles.heroContent, heroContentStyle]}>
+          <Animated.View
+            style={[styles.heroContent, heroContentStyle]}
+            onLayout={onHeroLayout}>
             <ScrollView
               horizontal
               pagingEnabled
               nestedScrollEnabled
               showsHorizontalScrollIndicator={false}
               decelerationRate="fast"
-              style={{ height: HERO_CAROUSEL_HEIGHT }}
               onMomentumScrollEnd={(event) => {
                 const page = Math.round(event.nativeEvent.contentOffset.x / heroPageWidth);
                 setHeroPage(page);
@@ -247,18 +249,17 @@ export function AgentHomeScreen() {
 
           <View style={styles.operationsCard}>
             <Text style={styles.sectionTitle}>Operações com clientes</Text>
-            <View style={styles.operationsGrid}>
+            <View style={styles.operationsRow}>
               {AGENT_OPERATION_ACTIONS.map((action) => (
                 <Pressable
                   key={action.id}
-                  style={styles.operationTile}
+                  style={styles.operationItem}
                   accessibilityRole="button"
                   onPress={() => router.push(action.href as never)}>
                   <View style={[styles.operationIcon, { backgroundColor: action.iconBg }]}>
-                    <Ionicons name={action.icon} size={24} color={action.iconColor} />
+                    <Ionicons name={action.icon} size={26} color={action.iconColor} />
                   </View>
                   <Text style={styles.operationTitle}>{action.title}</Text>
-                  <Text style={styles.operationSubtitle}>{action.subtitle}</Text>
                 </Pressable>
               ))}
             </View>
@@ -413,16 +414,19 @@ const styles = StyleSheet.create({
   },
   balanceAmount: {
     fontSize: 38,
+    lineHeight: 46,
     color: '#ffffff',
     fontWeight: '700',
     letterSpacing: 0.5,
+    textAlign: 'center',
+    ...(Platform.OS === 'android' ? { includeFontPadding: false } : {}),
   },
   heroPager: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    marginTop: 2,
+    marginTop: 6,
   },
   heroDot: {
     width: 7,
@@ -553,37 +557,29 @@ const styles = StyleSheet.create({
     color: NAVY,
     marginBottom: 14,
   },
-  operationsGrid: {
+  operationsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
   },
-  operationTile: {
-    width: '47%',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+  operationItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 4,
   },
   operationIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   operationTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  operationSubtitle: {
-    marginTop: 3,
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
   },
   linksCard: {
     marginTop: 14,

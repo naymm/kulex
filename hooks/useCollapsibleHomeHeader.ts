@@ -1,4 +1,5 @@
-import { StyleSheet } from 'react-native';
+import { useCallback, useState } from 'react';
+import { PixelRatio, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import {
   Extrapolation,
   interpolate,
@@ -12,13 +13,25 @@ const TOOLBAR_EXPANDED = 62;
 const TOOLBAR_COLLAPSED = 52;
 const SHEET_OVERLAP = 8;
 
-export function useCollapsibleHomeHeader(insets: EdgeInsets, heroHeight: number) {
+export function scaleHeroHeight(baseHeight: number): number {
+  return Math.ceil(baseHeight * Math.max(1, PixelRatio.getFontScale()));
+}
+
+export function useCollapsibleHomeHeader(insets: EdgeInsets, baseHeroHeight: number) {
+  const [heroHeight, setHeroHeight] = useState(() => scaleHeroHeight(baseHeroHeight));
   const scrollY = useSharedValue(0);
   const collapseRange = heroHeight;
   const expandedHeight = insets.top + 12 + TOOLBAR_EXPANDED + heroHeight;
   const collapsedHeight = insets.top + 8 + TOOLBAR_COLLAPSED;
   const paddingTopExpanded = insets.top + 12;
   const paddingTopCollapsed = insets.top + 6;
+
+  const onHeroLayout = useCallback((event: LayoutChangeEvent) => {
+    const measured = Math.ceil(event.nativeEvent.layout.height);
+    if (measured > 0) {
+      setHeroHeight((current) => (measured > current ? measured : current));
+    }
+  }, []);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -103,5 +116,6 @@ export function useCollapsibleHomeHeader(insets: EdgeInsets, heroHeight: number)
     sheetLiftStyle,
     headerBorderStyle,
     expandedHeight,
+    onHeroLayout,
   };
 }

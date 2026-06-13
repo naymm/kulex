@@ -16,6 +16,7 @@ import {
   KULEX_USER_SCORE,
   SCORE_BANDS,
   SCORE_HISTORY,
+  SCORE_SCALE_COLORS,
   SCORING_FACTORS,
   SCORING_IMPROVEMENT_TIPS,
 } from '@/constants/scoring';
@@ -23,6 +24,7 @@ import {
   buildScoringBenefits,
   formatScoreDelta,
   getScoreBand,
+  getScoreColor,
   getScoreDelta,
 } from '@/lib/scoring';
 
@@ -85,7 +87,9 @@ export default function ScoringScreen() {
       <Animated.View style={[styles.header, headerStyle]}>
         <LinearGradient
           colors={['#2A2A6E', NAVY, '#12123A']}
-          style={[styles.headerGradient, { paddingTop: headerPaddingTop }]}>
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.headerGradient, { paddingTop: headerPaddingTop }]}>
           <View style={styles.headerRow}>
             <Pressable
               style={styles.headerBtn}
@@ -118,7 +122,7 @@ export default function ScoringScreen() {
 
             <Text style={styles.heroDescription}>{band.description}</Text>
           </Animated.View>
-        </LinearGradient>
+        </View>
       </Animated.View>
 
       <Animated.ScrollView
@@ -145,10 +149,10 @@ export default function ScoringScreen() {
                 factor.maxPoints > 0 ? Math.min(1, factor.points / factor.maxPoints) : 0;
               const barColor =
                 factor.impact === 'negative'
-                  ? '#EF4444'
+                  ? SCORE_SCALE_COLORS.insuficiente
                   : factor.impact === 'neutral' && factor.points === 0
                     ? '#9CA3AF'
-                    : '#16A34A';
+                    : band.color;
 
               return (
                 <View key={factor.id} style={styles.factorCard}>
@@ -185,10 +189,16 @@ export default function ScoringScreen() {
               {SCORE_HISTORY.map((entry, index) => {
                 const barHeight = Math.max(12, (entry.score / maxHistoryScore) * 80);
                 const isLatest = index === SCORE_HISTORY.length - 1;
+                const entryColor = getScoreColor(entry.score);
 
                 return (
                   <View key={entry.id} style={styles.historyCol}>
-                    <Text style={[styles.historyScore, isLatest && styles.historyScoreActive]}>
+                    <Text
+                      style={[
+                        styles.historyScore,
+                        isLatest && styles.historyScoreActive,
+                        isLatest && { color: entryColor },
+                      ]}>
                       {entry.score}
                     </Text>
                     <View style={styles.historyBarTrack}>
@@ -197,7 +207,8 @@ export default function ScoringScreen() {
                           styles.historyBarFill,
                           {
                             height: barHeight,
-                            backgroundColor: isLatest ? band.color : '#C7D2FE',
+                            backgroundColor: entryColor,
+                            opacity: isLatest ? 1 : 0.55,
                           },
                         ]}
                       />
@@ -233,13 +244,15 @@ export default function ScoringScreen() {
                   </Text>
                   <Text style={styles.benefitDescription}>{benefit.description}</Text>
                   {!benefit.unlocked ? (
-                    <Text style={styles.benefitMin}>Mínimo: {benefit.minScore} pontos</Text>
+                    <Text style={[styles.benefitMin, { color: getScoreColor(benefit.minScore) }]}>
+                      Mínimo: {benefit.minScore} pontos
+                    </Text>
                   ) : null}
                 </View>
                 <Ionicons
                   name={benefit.unlocked ? 'checkmark-circle' : 'lock-closed'}
                   size={22}
-                  color={benefit.unlocked ? '#16A34A' : '#D1D5DB'}
+                  color={benefit.unlocked ? band.color : '#D1D5DB'}
                 />
               </View>
             ))}
@@ -371,6 +384,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: NAVY,
+    marginTop: 20,
   },
   sectionSubtitle: {
     fontSize: 13,
@@ -414,7 +428,7 @@ const styles = StyleSheet.create({
   factorPoints: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#16A34A',
+    color: NAVY,
   },
   factorBarTrack: {
     height: 6,
@@ -508,7 +522,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 11,
     fontWeight: '600',
-    color: '#F59E0B',
   },
   tipsCard: {
     backgroundColor: '#FFFFFF',

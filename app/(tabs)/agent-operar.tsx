@@ -6,8 +6,6 @@ import { AGENT_OPERATION_ACTIONS } from '@/constants/agent';
 
 const NAVY = '#1A1A4E';
 
-const OPERATIONS = AGENT_OPERATION_ACTIONS.filter((item) => item.id !== 'comissoes');
-
 export default function AgentOperarTabScreen() {
   const insets = useSafeAreaInsets();
 
@@ -26,7 +24,7 @@ export default function AgentOperarTabScreen() {
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
-          {OPERATIONS.map((action) => (
+          {AGENT_OPERATION_ACTIONS.map((action) => (
             <Pressable
               key={action.id}
               style={styles.tile}

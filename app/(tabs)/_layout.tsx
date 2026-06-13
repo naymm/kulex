@@ -98,8 +98,12 @@ export default function TabLayout() {
         options={{ title: 'Crédito', href: null }}
       />
       <Tabs.Screen
+        name="business-servicos"
+        options={{ title: 'Serviços', href: isBusiness ? undefined : null }}
+      />
+      <Tabs.Screen
         name="business-relatorios"
-        options={{ title: 'Relatórios', href: isBusiness ? undefined : null }}
+        options={{ title: 'Relatórios', href: null }}
       />
 
       <Tabs.Screen

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -21,7 +21,7 @@ import { useCollapsibleHomeHeader } from '@/hooks/useCollapsibleHomeHeader';
 
 const NAVY = '#1A1A4E';
 const TEAL = '#2FB7A9';
-const HERO_HEIGHT = 130;
+const HERO_HEIGHT = 152;
 
 export function BusinessHomeScreen() {
   const insets = useSafeAreaInsets();
@@ -39,6 +39,7 @@ export function BusinessHomeScreen() {
     sheetLiftStyle,
     headerBorderStyle,
     expandedHeight,
+    onHeroLayout,
   } = useCollapsibleHomeHeader(insets, HERO_HEIGHT);
 
   const balanceDisplay = showBalance ? activeAccount.balance : '•••••••• kz';
@@ -89,7 +90,9 @@ export function BusinessHomeScreen() {
             </Pressable>
           </Animated.View>
 
-          <Animated.View style={[styles.heroContent, heroContentStyle]}>
+          <Animated.View
+            style={[styles.heroContent, heroContentStyle]}
+            onLayout={onHeroLayout}>
             <TouchableOpacity
               style={styles.balanceLabel}
               onPress={() => setShowBalance(!showBalance)}
@@ -153,7 +156,7 @@ export function BusinessHomeScreen() {
           <Pressable
             style={styles.creditCard}
             accessibilityRole="button"
-            onPress={() => router.push('/business/credito-stock')}>
+            onPress={() => router.push('/(tabs)/business-credito')}>
             <LinearGradient
               colors={['#1A1A4E', '#2A2A6E']}
               start={{ x: 0, y: 0 }}
@@ -232,7 +235,7 @@ const styles = StyleSheet.create({
   },
   headerGradient: { flex: 1, paddingHorizontal: 20, overflow: 'hidden' },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  heroContent: { paddingBottom: 16, alignItems: 'center' },
+  heroContent: { paddingBottom: 12, alignItems: 'center' },
   profileWrap: { position: 'relative' },
   accountBadge: {
     position: 'absolute',
@@ -285,15 +288,19 @@ const styles = StyleSheet.create({
   balanceLabelText: { fontSize: 14, color: '#b8b8d1' },
   balanceAmount: {
     fontSize: 36,
+    lineHeight: 44,
     color: '#ffffff',
     fontWeight: '700',
     letterSpacing: 0.5,
+    textAlign: 'center',
+    ...(Platform.OS === 'android' ? { includeFontPadding: false } : {}),
   },
-  companyRow: { marginTop: 10, alignItems: 'center' },
-  companyName: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
+  companyRow: { marginTop: 8, alignItems: 'center', paddingHorizontal: 8 },
+  companyName: { fontSize: 15, lineHeight: 20, fontWeight: '700', color: '#FFFFFF', textAlign: 'center' },
   companyMeta: {
     marginTop: 4,
     fontSize: 12,
+    lineHeight: 16,
     fontWeight: '500',
     color: 'rgba(255,255,255,0.6)',
     textAlign: 'center',

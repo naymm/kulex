@@ -11,6 +11,15 @@ export const KULEX_SCORE_PREVIOUS = 838;
 
 export type ScoreBandId = 'insuficiente' | 'regular' | 'bom' | 'muito_bom' | 'excelente';
 
+/** Cores canónicas da escala de scoring (300–1000). */
+export const SCORE_SCALE_COLORS = {
+  insuficiente: '#E53935',
+  regular: '#F57C00',
+  bom: '#A89B32',
+  muito_bom: '#1E88E5',
+  excelente: '#43A047',
+} as const;
+
 export type ScoreBand = {
   id: ScoreBandId;
   label: string;
@@ -26,7 +35,7 @@ export const SCORE_BANDS: ScoreBand[] = [
     label: 'Insuficiente',
     min: 300,
     max: 549,
-    color: '#EF4444',
+    color: SCORE_SCALE_COLORS.insuficiente,
     description: 'Continue a utilizar a Kulex para construir o seu histórico financeiro.',
   },
   {
@@ -34,7 +43,7 @@ export const SCORE_BANDS: ScoreBand[] = [
     label: 'Regular',
     min: 550,
     max: 649,
-    color: '#F59E0B',
+    color: SCORE_SCALE_COLORS.regular,
     description: 'Já pode aceder a produtos básicos de crédito e cartão Branco.',
   },
   {
@@ -42,7 +51,7 @@ export const SCORE_BANDS: ScoreBand[] = [
     label: 'Bom',
     min: 650,
     max: 749,
-    color: '#C9A227',
+    color: SCORE_SCALE_COLORS.bom,
     description: 'Perfil sólido com acesso a cartões Gold e limites mais elevados.',
   },
   {
@@ -50,7 +59,7 @@ export const SCORE_BANDS: ScoreBand[] = [
     label: 'Muito bom',
     min: 750,
     max: 849,
-    color: '#3B82F6',
+    color: SCORE_SCALE_COLORS.muito_bom,
     description: 'Excelente comportamento financeiro. Elegível para cartão Prata.',
   },
   {
@@ -58,7 +67,7 @@ export const SCORE_BANDS: ScoreBand[] = [
     label: 'Excelente',
     min: 850,
     max: 1000,
-    color: '#16A34A',
+    color: SCORE_SCALE_COLORS.excelente,
     description: 'Perfil premium. Acesso ao máximo de produtos e cartão Black.',
   },
 ];
