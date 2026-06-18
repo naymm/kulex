@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { goBackFromOrigin } from '@/lib/navigation';
 
@@ -12,13 +12,35 @@ const NAVY = '#1A1A4E';
 type AddMoneyShellProps = {
   title?: string;
   hideHeader?: boolean;
+  scrollable?: boolean;
   children: ReactNode;
   footer?: ReactNode;
 };
 
-export function AddMoneyShell({ title, hideHeader = false, children, footer }: AddMoneyShellProps) {
+export function AddMoneyShell({
+  title,
+  hideHeader = false,
+  scrollable = true,
+  children,
+  footer,
+}: AddMoneyShellProps) {
   const insets = useSafeAreaInsets();
   const { from } = useLocalSearchParams<{ from?: string }>();
+
+  const bodyContent = scrollable ? (
+    <ScrollView
+      style={styles.body}
+      contentContainerStyle={[
+        styles.bodyContent,
+        footer ? styles.bodyContentWithFooter : undefined,
+      ]}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled">
+      {children}
+    </ScrollView>
+  ) : (
+    <View style={styles.body}>{children}</View>
+  );
 
   return (
     <View style={styles.container}>
@@ -42,7 +64,7 @@ export function AddMoneyShell({ title, hideHeader = false, children, footer }: A
             {title ? <Text style={styles.headerTitle}>{title}</Text> : null}
           </View>
         ) : null}
-        <View style={styles.body}>{children}</View>
+        {bodyContent}
         {footer}
       </LinearGradient>
     </View>
@@ -94,6 +116,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   body: { flex: 1 },
+  bodyContent: {
+    flexGrow: 1,
+  },
+  bodyContentWithFooter: {
+    paddingBottom: 8,
+  },
   primaryBtn: {
     height: 56,
     borderRadius: 28,

@@ -13,7 +13,8 @@ import {
   getKixikilaActions,
   getKixikilaDetail,
   getKixikilaStatusLabel,
-  getNextReceiver,
+  getNextReceiverLabel,
+  isPlatformKixikila,
   type KixikilaDetailAction,
 } from '@/constants/kixikila';
 
@@ -30,14 +31,15 @@ export default function KixikilaDetailScreen() {
     );
   }
 
-  const nextReceiver = getNextReceiver(detail);
-  const actions = getKixikilaActions(detail.role);
+  const nextReceiverLabel = getNextReceiverLabel(detail);
+  const actions = getKixikilaActions(detail.role, detail);
   const roleLabel = detail.role === 'organizer' ? 'Organizador' : 'Membro';
   const statusLabel = getKixikilaStatusLabel(
     detail.status,
     detail.currentMembers,
     detail.memberCapacity
   );
+  const isPlatform = isPlatformKixikila(detail);
 
   const openAction = (action: KixikilaDetailAction) => {
     if (action.route === 'adicionar-membro') {
@@ -51,7 +53,11 @@ export default function KixikilaDetailScreen() {
     <View style={kixikilaDetailStyles.container}>
         <KixikilaDetailHeader
           title={detail.title}
-          subtitle={`${roleLabel} · ${statusLabel}`}
+          subtitle={
+            isPlatform
+              ? `Gerida pela Kulex · ${statusLabel}`
+              : `${roleLabel} · ${statusLabel}`
+          }
           onBack={() => router.dismissTo('/kixikila')}
         />
 
@@ -66,6 +72,15 @@ export default function KixikilaDetailScreen() {
           <Text style={kixikilaDetailStyles.balanceLabel}>Saldo Actual da Kixikila</Text>
           <Text style={kixikilaDetailStyles.balanceValue}>{detail.balance}</Text>
         </View>
+
+        {isPlatform ? (
+          <View style={styles.anonymousNotice}>
+            <Ionicons name="eye-off-outline" size={18} color="#1A1A4E" />
+            <Text style={styles.anonymousNoticeText}>
+              Os nomes dos participantes são ocultados nesta Kixikila gerida pela Kulex.
+            </Text>
+          </View>
+        ) : null}
 
         <View style={kixikilaDetailStyles.card}>
           <Text style={kixikilaDetailStyles.cardTitle}>Informações</Text>
@@ -108,17 +123,30 @@ export default function KixikilaDetailScreen() {
           <KixikilaMetaRow
             icon="trophy-outline"
             label="Próximo a receber"
-            value={detail.status === 'active' ? nextReceiver?.name ?? '—' : 'Inicia após completar membros'}
+            value={
+              detail.status === 'active'
+                ? nextReceiverLabel
+                : 'Inicia após completar membros'
+            }
           />
-          <View style={[styles.inviteBlock, styles.inviteBlockLast]}>
-            <Text style={styles.inviteLabel}>Código de Convite</Text>
-            <View style={kixikilaDetailStyles.inviteRow}>
-              <Text style={kixikilaDetailStyles.inviteCode}>{detail.inviteCode}</Text>
-              <Pressable style={kixikilaDetailStyles.copyBtn} accessibilityRole="button">
-                <Ionicons name="copy-outline" size={18} color="#111827" />
-              </Pressable>
+          {isPlatform ? (
+            <KixikilaMetaRow
+              icon="shield-checkmark-outline"
+              label="Protecção"
+              value={detail.protection ?? 'Com seguro'}
+              last
+            />
+          ) : (
+            <View style={[styles.inviteBlock, styles.inviteBlockLast]}>
+              <Text style={styles.inviteLabel}>Código de Convite</Text>
+              <View style={kixikilaDetailStyles.inviteRow}>
+                <Text style={kixikilaDetailStyles.inviteCode}>{detail.inviteCode}</Text>
+                <Pressable style={kixikilaDetailStyles.copyBtn} accessibilityRole="button">
+                  <Ionicons name="copy-outline" size={18} color="#111827" />
+                </Pressable>
+              </View>
             </View>
-          </View>
+          )}
         </View>
 
         <View style={kixikilaDetailStyles.card}>
@@ -159,5 +187,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: '#374151',
+  },
+  anonymousNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#EEF0F8',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  anonymousNoticeText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#1A1A4E',
+    lineHeight: 17,
   },
 });

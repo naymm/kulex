@@ -176,6 +176,7 @@ export default function AdicionarMembroScreen() {
     <>
       <AddMoneyShell
         title="Adicionar Membro"
+        scrollable={false}
         footer={
           <AddMoneyPrimaryButton
             label="Continuar"

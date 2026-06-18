@@ -10,6 +10,7 @@ import {
   getKixikilaDetail,
   getNextReceiver,
   getOrderedParticipants,
+  getParticipantDisplay,
 } from '@/constants/kixikila';
 
 function useKixikilaDetailFromParams() {
@@ -43,11 +44,17 @@ export default function KixikilaParticipantesScreen() {
         <View style={kixikilaDetailStyles.listCard}>
           {participants.map((participant, index) => {
             const isNext = participant.id === nextReceiver?.id;
+            const displayParticipant = getParticipantDisplay(detail, participant);
+            const isOpenSlot = participant.id.startsWith('slot-');
             return (
               <KixikilaParticipantRow
                 key={participant.id}
-                participant={participant}
-                badge={`${participant.order}º na ordem`}
+                participant={displayParticipant}
+                badge={
+                  isOpenSlot
+                    ? 'Vaga disponível'
+                    : `${participant.order}º na ordem`
+                }
                 last={index === participants.length - 1}
                 trailing={
                   <View style={{ alignItems: 'flex-end' }}>

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,9 +9,9 @@ import { HomeMoreMenu } from '@/components/home/HomeMoreMenu';
 import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
 import { useActiveAccount } from '@/contexts/AccountContext';
 import { useCollapsibleHomeHeader } from '@/hooks/useCollapsibleHomeHeader';
+import { getUnreadPersonalNotificationCount } from '@/lib/notifications';
 
 const HERO_HEIGHT = 118;
-const UNREAD_NOTIFICATIONS = 2;
 
 const transactions = [
   {
@@ -45,6 +45,9 @@ export function PersonalHomeScreen() {
   const { activeAccount } = useActiveAccount();
   const [showBalance, setShowBalance] = useState(true);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(
+    getUnreadPersonalNotificationCount(),
+  );
   const [moreAnchor, setMoreAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const moreButtonRef = useRef<View>(null);
 
@@ -59,6 +62,12 @@ export function PersonalHomeScreen() {
     expandedHeight,
     onHeroLayout,
   } = useCollapsibleHomeHeader(insets, HERO_HEIGHT);
+
+  useFocusEffect(
+    useCallback(() => {
+      setUnreadNotifications(getUnreadPersonalNotificationCount());
+    }, []),
+  );
 
   const balanceDisplay = showBalance ? activeAccount.balance : '•••••••• kz';
 
@@ -92,11 +101,14 @@ export function PersonalHomeScreen() {
             <Pressable
               style={styles.bellBtn}
               accessibilityRole="button"
-              accessibilityLabel="Notificações">
+              accessibilityLabel="Notificações"
+              onPress={() =>
+                router.push({ pathname: '/notificacoes', params: { from: 'home' } })
+              }>
               <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
-              {UNREAD_NOTIFICATIONS > 0 ? (
+              {unreadNotifications > 0 ? (
                 <View style={styles.bellBadge}>
-                  <Text style={styles.bellBadgeText}>{UNREAD_NOTIFICATIONS}</Text>
+                  <Text style={styles.bellBadgeText}>{unreadNotifications}</Text>
                 </View>
               ) : null}
             </Pressable>

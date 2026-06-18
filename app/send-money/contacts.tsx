@@ -112,7 +112,7 @@ export default function SendMoneyContactsScreen() {
 
   return (
     <>
-      <AddMoneyShell title="Contactos">
+      <AddMoneyShell title="Contactos" scrollable={false}>
         <View style={styles.searchRow}>
           <View style={styles.searchWrap}>
             <Ionicons name="search-outline" size={18} color="rgba(255,255,255,0.55)" />

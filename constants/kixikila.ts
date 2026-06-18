@@ -51,6 +51,21 @@ export function parseCommissionMode(value?: string): KixikilaCommissionMode {
 }
 export const KIXIKILA_ORGANIZER_ID = 'naym-mupoia';
 export const KIXIKILA_ORGANIZER_NAME = 'Naym Mupoia';
+export const KIXIKILA_CURRENT_USER_ID = 'current-user';
+export const KIXIKILA_PLATFORM_ORGANIZER = 'Kulex';
+
+const ANONYMOUS_PARTICIPANT_COLORS = [
+  '#2FB7A9',
+  '#D6D64A',
+  '#2F78B7',
+  '#EC4899',
+  '#F97316',
+  '#8B5CF6',
+  '#14B8A6',
+  '#F59E0B',
+  '#6366F1',
+  '#EF4444',
+] as const;
 export const KIXIKILA_MAX_DURATION_CYCLES = 6;
 
 export type KixikilaAmounts = {
@@ -65,6 +80,8 @@ export type KixikilaAction = {
   icon: IoniconName;
 };
 
+export type KixikilaSource = 'user' | 'platform';
+
 export type MyKixikila = {
   id: string;
   title: string;
@@ -72,6 +89,18 @@ export type MyKixikila = {
   memberCapacity: number;
   amountPerMember: string;
   role: KixikilaRole;
+  status: KixikilaStatus;
+  source?: KixikilaSource;
+};
+
+export type PlatformKixikilaSummary = {
+  id: string;
+  title: string;
+  description: string;
+  members: number;
+  memberCapacity: number;
+  amountPerMember: string;
+  frequency: string;
   status: KixikilaStatus;
 };
 
@@ -105,6 +134,10 @@ export type KixikilaDetail = {
   commissionMode: KixikilaCommissionMode;
   nextReceiverId: string;
   participants: KixikilaParticipant[];
+  source?: KixikilaSource;
+  isMember?: boolean;
+  frequency?: string;
+  protection?: string;
 };
 
 export type KixikilaDetailAction = {
@@ -159,6 +192,7 @@ export const MY_KIXIKILAS: MyKixikila[] = [
     amountPerMember: '45.000,00 kz',
     role: 'organizer',
     status: 'active',
+    source: 'user',
   },
   {
     id: 'vendedoras-kikolo',
@@ -168,6 +202,50 @@ export const MY_KIXIKILAS: MyKixikila[] = [
     amountPerMember: '100.000,00 kz',
     role: 'member',
     status: 'pending',
+    source: 'user',
+  },
+  {
+    id: 'kulex-100k',
+    title: 'Kixikila Premium 100.000',
+    members: 7,
+    memberCapacity: 10,
+    amountPerMember: '100.000,00 kz',
+    role: 'member',
+    status: 'active',
+    source: 'platform',
+  },
+];
+
+export const PLATFORM_KIXIKILAS: PlatformKixikilaSummary[] = [
+  {
+    id: 'kulex-20k',
+    title: 'Kixikila Família 20.000',
+    description: 'Grupo mensal gerido pela Kulex. Participantes anónimos.',
+    members: 3,
+    memberCapacity: 5,
+    amountPerMember: '20.000,00 kz',
+    frequency: 'Mensal',
+    status: 'pending',
+  },
+  {
+    id: 'kulex-50k',
+    title: 'Kixikila Empreendedor 50.000',
+    description: 'Ideal para pequenos negócios. Identidades protegidas.',
+    members: 6,
+    memberCapacity: 8,
+    amountPerMember: '50.000,00 kz',
+    frequency: 'Mensal',
+    status: 'pending',
+  },
+  {
+    id: 'kulex-100k',
+    title: 'Kixikila Premium 100.000',
+    description: 'Grupo de maior valor com gestão automática pela Kulex.',
+    members: 7,
+    memberCapacity: 10,
+    amountPerMember: '100.000,00 kz',
+    frequency: 'Mensal',
+    status: 'active',
   },
 ];
 
@@ -435,6 +513,111 @@ const MERCADO_PARTICIPANTS: KixikilaParticipant[] = [
   },
 ];
 
+function createAnonymousParticipants(
+  memberCapacity: number,
+  currentMembers: number,
+  contributedCount: number,
+  includeCurrentUser = false,
+): KixikilaParticipant[] {
+  const participants: KixikilaParticipant[] = [];
+
+  for (let index = 0; index < currentMembers; index += 1) {
+    const order = index + 1;
+    const isCurrentUser = includeCurrentUser && index === currentMembers - 1;
+    participants.push({
+      id: isCurrentUser ? KIXIKILA_CURRENT_USER_ID : `participant-${order}`,
+      name: isCurrentUser ? 'Tu' : `Participante ${order}`,
+      initials: isCurrentUser ? 'TU' : String(order),
+      color: ANONYMOUS_PARTICIPANT_COLORS[index % ANONYMOUS_PARTICIPANT_COLORS.length],
+      order,
+      contributed: order <= contributedCount,
+    });
+  }
+
+  for (let index = currentMembers; index < memberCapacity; index += 1) {
+    const order = index + 1;
+    participants.push({
+      id: `slot-${order}`,
+      name: `Vaga ${order}`,
+      initials: '—',
+      color: '#E5E7EB',
+      order,
+      contributed: false,
+    });
+  }
+
+  return participants;
+}
+
+const PLATFORM_KIXIKILA_DETAILS: Record<string, KixikilaDetail> = {
+  'kulex-20k': {
+    id: 'kulex-20k',
+    title: 'Kixikila Família 20.000',
+    role: 'member',
+    status: 'pending',
+    balance: '60.000,00 kz',
+    organizer: KIXIKILA_PLATFORM_ORGANIZER,
+    currentMembers: 3,
+    memberCapacity: 5,
+    inviteCode: '',
+    amountPerMember: '20.000,00 kz',
+    debitDay: 5,
+    durationMonths: 5,
+    frequency: 'Mensal',
+    protection: 'Com seguro',
+    ...formatKixikilaAmounts('20.000,00', '5'),
+    commissionMode: 'deduct_from_pool',
+    nextReceiverId: 'participant-1',
+    source: 'platform',
+    isMember: false,
+    participants: createAnonymousParticipants(5, 3, 2),
+  },
+  'kulex-50k': {
+    id: 'kulex-50k',
+    title: 'Kixikila Empreendedor 50.000',
+    role: 'member',
+    status: 'pending',
+    balance: '300.000,00 kz',
+    organizer: KIXIKILA_PLATFORM_ORGANIZER,
+    currentMembers: 6,
+    memberCapacity: 8,
+    inviteCode: '',
+    amountPerMember: '50.000,00 kz',
+    debitDay: 5,
+    durationMonths: 8,
+    frequency: 'Mensal',
+    protection: 'Com seguro',
+    ...formatKixikilaAmounts('50.000,00', '8'),
+    commissionMode: 'deduct_from_pool',
+    nextReceiverId: 'participant-3',
+    source: 'platform',
+    isMember: false,
+    participants: createAnonymousParticipants(8, 6, 4),
+  },
+  'kulex-100k': {
+    id: 'kulex-100k',
+    title: 'Kixikila Premium 100.000',
+    role: 'member',
+    status: 'active',
+    balance: '700.000,00 kz',
+    organizer: KIXIKILA_PLATFORM_ORGANIZER,
+    currentMembers: 7,
+    memberCapacity: 10,
+    inviteCode: '',
+    amountPerMember: '100.000,00 kz',
+    debitDay: 5,
+    durationMonths: 10,
+    frequency: 'Mensal',
+    protection: 'Com seguro',
+    ...formatKixikilaAmounts('100.000,00', '10'),
+    commissionMode: 'deduct_from_pool',
+    nextReceiverId: 'participant-4',
+    source: 'platform',
+    isMember: true,
+    participants: createAnonymousParticipants(10, 7, 5, true),
+  },
+};
+
 export const KIXIKILA_DETAILS: Record<string, KixikilaDetail> = {
   'mercado-kikolo': {
     id: 'mercado-kikolo',
@@ -476,14 +659,86 @@ export const KIXIKILA_DETAILS: Record<string, KixikilaDetail> = {
       contributed: participant.order <= 2,
     })),
   },
+  ...PLATFORM_KIXIKILA_DETAILS,
 };
+
+export function isPlatformKixikila(detail?: Pick<KixikilaDetail, 'source'>) {
+  return detail?.source === 'platform';
+}
+
+export function getPlatformKixikila(id?: string) {
+  if (!id) return undefined;
+  return PLATFORM_KIXIKILAS.find((item) => item.id === id);
+}
+
+export function getAvailablePlatformKixikilas() {
+  const joinedIds = new Set(
+    MY_KIXIKILAS.filter((item) => item.source === 'platform').map((item) => item.id),
+  );
+  return PLATFORM_KIXIKILAS.filter((item) => !joinedIds.has(item.id));
+}
+
+export function isJoinedPlatformKixikila(id: string) {
+  return MY_KIXIKILAS.some((item) => item.id === id && item.source === 'platform');
+}
+
+export function getParticipantDisplayName(
+  detail: KixikilaDetail,
+  participant: KixikilaParticipant,
+) {
+  if (!isPlatformKixikila(detail)) {
+    return participant.name;
+  }
+  if (participant.id.startsWith('slot-')) {
+    return participant.name;
+  }
+  if (participant.id === KIXIKILA_CURRENT_USER_ID) {
+    return 'Tu';
+  }
+  return `Participante ${participant.order}`;
+}
+
+export function getParticipantDisplay(
+  detail: KixikilaDetail,
+  participant: KixikilaParticipant,
+): KixikilaParticipant {
+  if (!isPlatformKixikila(detail)) {
+    return participant;
+  }
+  const name = getParticipantDisplayName(detail, participant);
+  return {
+    ...participant,
+    name,
+    initials: participant.id === KIXIKILA_CURRENT_USER_ID ? 'TU' : String(participant.order),
+  };
+}
+
+export function getNextReceiverLabel(detail: KixikilaDetail) {
+  const nextReceiver = getNextReceiver(detail);
+  if (!nextReceiver) return '—';
+  if (!isPlatformKixikila(detail)) {
+    return nextReceiver.name;
+  }
+  if (nextReceiver.id.startsWith('slot-')) {
+    return 'A definir';
+  }
+  return getParticipantDisplayName(detail, nextReceiver);
+}
 
 export function getKixikilaDetail(id?: string): KixikilaDetail | undefined {
   if (!id) return undefined;
   return KIXIKILA_DETAILS[id];
 }
 
-export function getKixikilaActions(role: KixikilaRole) {
+export function getKixikilaActions(role: KixikilaRole, detail?: KixikilaDetail) {
+  if (detail && isPlatformKixikila(detail)) {
+    return KIXIKILA_DETAIL_ACTIONS.filter(
+      (action) =>
+        !action.organizerOnly &&
+        action.route !== 'adicionar-membro' &&
+        action.route !== 'ordem',
+    );
+  }
   return KIXIKILA_DETAIL_ACTIONS.filter((action) => !action.organizerOnly || role === 'organizer');
 }
 

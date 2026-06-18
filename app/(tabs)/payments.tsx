@@ -113,6 +113,13 @@ export default function PaymentsScreen() {
               }
               if (category.id === 'servicos') {
                 router.push({ pathname: '/payments/servicos', params: { from: 'payments' } });
+                return;
+              }
+              if (category.id === 'jogos') {
+                router.push({
+                  pathname: '/payments/jogos' as never,
+                  params: { from: 'payments' },
+                });
               }
             }}
           />

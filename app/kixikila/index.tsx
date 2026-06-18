@@ -120,6 +120,9 @@ function KixikilaListItem({ item }: { item: MyKixikila }) {
       </View>
       <View style={styles.listText}>
         <Text style={styles.listTitle}>{item.title}</Text>
+        {item.source === 'platform' ? (
+          <Text style={styles.platformBadge}>Gerida pela Kulex</Text>
+        ) : null}
         <Text style={styles.listMeta}>
           Membros: {item.members}/{item.memberCapacity} · {statusLabel}
         </Text>
@@ -237,6 +240,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: 4,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 13,
@@ -267,6 +271,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111827',
     letterSpacing: -0.5,
+  },
+  platformBadge: {
+    marginTop: 4,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1A1A4E',
   },
   listText: {
     flex: 1,

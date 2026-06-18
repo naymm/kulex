@@ -6,7 +6,7 @@ import {
   KixikilaParticipantRow,
   kixikilaDetailStyles,
 } from '@/components/kixikila/KixikilaDetailUi';
-import { getContributors, getKixikilaDetail } from '@/constants/kixikila';
+import { getContributors, getKixikilaDetail, getParticipantDisplay } from '@/constants/kixikila';
 
 export default function KixikilaContribuicoesScreen() {
   const insets = useSafeAreaInsets();
@@ -36,7 +36,7 @@ export default function KixikilaContribuicoesScreen() {
             contributors.map((participant, index) => (
               <KixikilaParticipantRow
                 key={participant.id}
-                participant={participant}
+                participant={getParticipantDisplay(detail, participant)}
                 badge={`Contribuição: ${detail.amountPerMember}`}
                 last={index === contributors.length - 1}
                 trailing={

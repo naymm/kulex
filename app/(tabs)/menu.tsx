@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -13,6 +14,9 @@ import { AccountAvatar, AccountSwitcherSheet } from '@/components/menu/AccountSw
 import { MenuRow } from '@/components/menu/MenuRow';
 import { getMenuSectionsForAccount, type MenuItem } from '@/constants/menu';
 import { useActiveAccount } from '@/contexts/AccountContext';
+import { getNotificationsRouteForAccount, getUnreadPersonalNotificationCount } from '@/lib/notifications';
+import { getUnreadBusinessNotificationCount } from '@/lib/business';
+import { getUnreadNotificationCount as getUnreadAgentNotificationCount } from '@/lib/agent';
 import { logoutToLogin, pushFromMenu } from '@/lib/navigation';
 
 const NAVY = '#1A1A4E';
@@ -33,6 +37,21 @@ export default function MenuScreen() {
     twoFactor: false,
     location: true,
   });
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activeAccount.kind === 'business') {
+        setUnreadNotifications(getUnreadBusinessNotificationCount());
+        return;
+      }
+      if (activeAccount.kind === 'agent') {
+        setUnreadNotifications(getUnreadAgentNotificationCount());
+        return;
+      }
+      setUnreadNotifications(getUnreadPersonalNotificationCount());
+    }, [activeAccount.kind]),
+  );
 
   const handleToggle = (key: keyof ToggleState, value: boolean) => {
     setToggles((prev) => ({ ...prev, [key]: value }));
@@ -90,8 +109,17 @@ export default function MenuScreen() {
             </View>
             <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.7)" />
           </Pressable>
-          <Pressable style={styles.notifyBtn} accessibilityRole="button">
+          <Pressable
+            style={styles.notifyBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Notificações"
+            onPress={() => router.push(getNotificationsRouteForAccount(activeAccount.kind) as never)}>
             <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
+            {unreadNotifications > 0 ? (
+              <View style={styles.notifyBadge}>
+                <Text style={styles.notifyBadgeText}>{unreadNotifications}</Text>
+              </View>
+            ) : null}
           </Pressable>
         </View>
 
@@ -253,6 +281,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  notifyBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notifyBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   searchWrap: {
     height: 46,

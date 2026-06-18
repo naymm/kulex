@@ -32,6 +32,12 @@ export const PAYMENT_CATEGORIES: PaymentCategory[] = [
     icon: 'flash-outline',
   },
   {
+    id: 'jogos',
+    title: 'Jogos',
+    description: 'Carregue a sua conta nas principais casas de apostas em Angola.',
+    icon: 'game-controller-outline',
+  },
+  {
     id: 'estado',
     title: 'Pagamento ao Estado',
     description:

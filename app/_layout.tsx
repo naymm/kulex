@@ -29,6 +29,7 @@ export default function RootLayout() {
         <Stack.Screen name="payments" />
         <Stack.Screen name="remessas" />
         <Stack.Screen name="scoring" />
+        <Stack.Screen name="notificacoes" />
         <Stack.Screen name="agent" />
         <Stack.Screen name="business" />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

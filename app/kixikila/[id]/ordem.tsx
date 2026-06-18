@@ -12,6 +12,8 @@ import {
   getKixikilaDetail,
   getNextReceiver,
   getOrderedParticipants,
+  getParticipantDisplay,
+  isPlatformKixikila,
   type KixikilaParticipant,
 } from '@/constants/kixikila';
 
@@ -25,7 +27,7 @@ export default function KixikilaOrdemScreen() {
 
   if (!detail) return null;
 
-  if (detail.role !== 'organizer') {
+  if (detail.role !== 'organizer' || isPlatformKixikila(detail)) {
     return <Redirect href={`/kixikila/${detail.id}`} />;
   }
 
@@ -72,7 +74,7 @@ export default function KixikilaOrdemScreen() {
             return (
               <View key={participant.id} style={styles.rowWrap}>
                 <KixikilaParticipantRow
-                  participant={participant}
+                  participant={getParticipantDisplay(detail, participant)}
                   badge={isNext ? 'Próximo a receber' : undefined}
                   last={index === participants.length - 1 && !canEdit}
                   trailing={
