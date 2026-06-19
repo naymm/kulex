@@ -90,6 +90,9 @@ function ActionButton({ action }: { action: KixikilaAction }) {
     if (action.id === 'participar') {
       router.push('/kixikila/participar');
     }
+    if (action.id === 'como-funciona') {
+      router.push('/kixikila/como-funciona');
+    }
   };
 
   return (
