@@ -51,6 +51,7 @@ type SignupShellProps = {
   footer?: ReactNode;
   buttonLabel?: string;
   onContinue?: () => void;
+  continueDisabled?: boolean;
   scrollable?: boolean;
   contentStyle?: object;
 };
@@ -73,6 +74,7 @@ export function SignupShell({
   footer,
   buttonLabel,
   onContinue,
+  continueDisabled = false,
   scrollable = false,
   contentStyle,
 }: SignupShellProps) {
@@ -102,8 +104,15 @@ export function SignupShell({
           {body}
           {footer}
           {buttonLabel && onContinue ? (
-            <Pressable style={styles.cta} accessibilityRole="button" onPress={onContinue}>
-              <Text style={styles.ctaText}>{buttonLabel}</Text>
+            <Pressable
+              style={[styles.cta, continueDisabled && styles.ctaDisabled]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: continueDisabled }}
+              disabled={continueDisabled}
+              onPress={onContinue}>
+              <Text style={[styles.ctaText, continueDisabled && styles.ctaTextDisabled]}>
+                {buttonLabel}
+              </Text>
             </Pressable>
           ) : null}
         </ScrollView>
@@ -112,8 +121,15 @@ export function SignupShell({
           <View style={styles.pageInner}>{body}</View>
           {footer}
           {buttonLabel && onContinue ? (
-            <Pressable style={styles.cta} accessibilityRole="button" onPress={onContinue}>
-              <Text style={styles.ctaText}>{buttonLabel}</Text>
+            <Pressable
+              style={[styles.cta, continueDisabled && styles.ctaDisabled]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: continueDisabled }}
+              disabled={continueDisabled}
+              onPress={onContinue}>
+              <Text style={[styles.ctaText, continueDisabled && styles.ctaTextDisabled]}>
+                {buttonLabel}
+              </Text>
             </Pressable>
           ) : null}
         </View>
@@ -171,4 +187,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  ctaDisabled: {
+    opacity: 0.45,
+  },
+  ctaTextDisabled: {
+    color: '#FFFFFF',
+  },
 });

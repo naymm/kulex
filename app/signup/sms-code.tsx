@@ -9,15 +9,17 @@ import {
 } from 'react-native';
 import { SignupShell } from '@/components/signup/SignupShell';
 import { useSignup } from '@/contexts/signup-context';
+import { getCountryDialCode } from '@/constants/country-dial-codes';
 
-function maskPhone(phone: string) {
+function maskPhone(countryCode: string, phone: string) {
+  const dialCode = getCountryDialCode(countryCode);
   const digits = phone.replace(/\D/g, '');
-  if (digits.length < 4) return '********';
-  return `******${digits.slice(-4)}`;
+  if (digits.length < 4) return `${dialCode} ********`;
+  return `${dialCode} ******${digits.slice(-4)}`;
 }
 
 export default function SignupSmsCodeScreen() {
-  const { phone } = useSignup();
+  const { country, phone } = useSignup();
   const [code, setCode] = useState('');
   const inputRef = useRef<TextInput>(null);
   const digits = code.replace(/\D/g, '').slice(0, 6);
@@ -29,7 +31,7 @@ export default function SignupSmsCodeScreen() {
       onContinue={() => router.push('/signup/password')}
       scrollable>
       <Text style={styles.hint}>
-        Insira o código de segurança que enviamos para {maskPhone(phone)}.
+        Insira o código de segurança que enviamos para {maskPhone(country.code, phone)}.
       </Text>
 
       <Pressable style={styles.otpRow} onPress={() => inputRef.current?.focus()}>
