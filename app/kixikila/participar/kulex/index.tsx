@@ -4,12 +4,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AddMoneyShell } from '@/components/add-money/AddMoneyShell';
 import {
   getKixikilaStatusLabel,
-  isJoinedPlatformKixikila,
-  PLATFORM_KIXIKILAS,
   type PlatformKixikilaSummary,
 } from '@/constants/kixikila';
+import { useKixikilaData } from '@/hooks/useKixikilaData';
 
 export default function KixikilaKulexListScreen() {
+  const { platformKixikilas, isJoinedPlatform } = useKixikilaData();
+
   return (
     <AddMoneyShell title="Kixikila Kulex">
       <Text style={styles.hint}>
@@ -17,17 +18,26 @@ export default function KixikilaKulexListScreen() {
       </Text>
 
       <View style={styles.list}>
-        {PLATFORM_KIXIKILAS.map((item) => (
-          <PlatformKixikilaRow key={item.id} item={item} />
+        {platformKixikilas.map((item) => (
+          <PlatformKixikilaRow
+            key={item.id}
+            item={item}
+            joined={isJoinedPlatform(item.id)}
+          />
         ))}
       </View>
     </AddMoneyShell>
   );
 }
 
-function PlatformKixikilaRow({ item }: { item: PlatformKixikilaSummary }) {
+function PlatformKixikilaRow({
+  item,
+  joined,
+}: {
+  item: PlatformKixikilaSummary;
+  joined: boolean;
+}) {
   const statusLabel = getKixikilaStatusLabel(item.status, item.members, item.memberCapacity);
-  const joined = isJoinedPlatformKixikila(item.id);
 
   const handlePress = () => {
     if (joined) {

@@ -1,10 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MOVEMENTS } from '@/constants/movimentos';
+import { useActiveAccount } from '@/contexts/AccountContext';
+import { useAccountMovements } from '@/hooks/useAccountMovements';
+import { fetchMovementById } from '@/lib/api/movements';
 import { getMovementById, getMovementDetails } from '@/lib/movimentos';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 const NAVY = '#1A1A4E';
 
@@ -21,18 +25,59 @@ export default function MovimentoDetalheScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const movementId = typeof id === 'string' ? id : '';
+  const { activeAccountId } = useActiveAccount();
+  const { movements } = useAccountMovements();
+  const [remoteLoading, setRemoteLoading] = useState(false);
+  const [remoteReference, setRemoteReference] = useState<string | null>(null);
 
   const movement = useMemo(
-    () => getMovementById(movementId, MOVEMENTS),
-    [movementId]
+    () => getMovementById(movementId, movements.length ? movements : MOVEMENTS),
+    [movementId, movements],
   );
 
-  const details = useMemo(
-    () => (movement ? getMovementDetails(movement) : null),
-    [movement]
-  );
+  useEffect(() => {
+    if (!isSupabaseConfigured || !movementId || movement) return;
 
-  if (!movement || !details) {
+    let cancelled = false;
+    setRemoteLoading(true);
+
+    void fetchMovementById(activeAccountId, movementId)
+      .then((row) => {
+        if (cancelled || !row) return;
+        setRemoteReference(row.reference);
+      })
+      .finally(() => {
+        if (!cancelled) setRemoteLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeAccountId, movement, movementId]);
+
+  const resolvedMovement = useMemo(() => {
+    if (movement) return movement;
+    return null;
+  }, [movement]);
+
+  const details = useMemo(() => {
+    if (!resolvedMovement) return null;
+    const base = getMovementDetails(resolvedMovement);
+    if (remoteReference) {
+      return { ...base, reference: remoteReference };
+    }
+    return base;
+  }, [resolvedMovement, remoteReference]);
+
+  if (remoteLoading && !resolvedMovement) {
+    return (
+      <View style={[styles.container, styles.emptyState, { paddingTop: insets.top + 24 }]}>
+        <ActivityIndicator color={NAVY} />
+      </View>
+    );
+  }
+
+  if (!resolvedMovement || !details) {
     return (
       <View style={[styles.container, styles.emptyState, { paddingTop: insets.top + 24 }]}>
         <Pressable style={styles.headerBtn} onPress={() => router.back()}>
@@ -43,7 +88,7 @@ export default function MovimentoDetalheScreen() {
     );
   }
 
-  const isCredit = movement.type === 'credit';
+  const isCredit = resolvedMovement.type === 'credit';
 
   return (
     <View style={styles.container}>
@@ -70,8 +115,8 @@ export default function MovimentoDetalheScreen() {
               color="#111827"
             />
           </View>
-          <Text style={styles.summaryTitle}>{movement.title}</Text>
-          <Text style={styles.summaryAmount}>{movement.amount}</Text>
+          <Text style={styles.summaryTitle}>{resolvedMovement.title}</Text>
+          <Text style={styles.summaryAmount}>{resolvedMovement.amount}</Text>
           <View style={[styles.typeBadge, isCredit ? styles.typeBadgeCredit : styles.typeBadgeDebit]}>
             <Text style={styles.typeBadgeText}>{details.typeLabel}</Text>
           </View>
@@ -79,7 +124,7 @@ export default function MovimentoDetalheScreen() {
 
         <View style={styles.detailsCard}>
           <DetailRow label="Refª da Transação" value={details.reference} />
-          <DetailRow label="Data" value={movement.dateLabel} />
+          <DetailRow label="Data" value={resolvedMovement.dateLabel} />
           <DetailRow label="Hora" value={details.timeLabel} />
           <DetailRow label="Categoria" value={details.category} />
           <DetailRow label="Canal" value={details.channel} />
@@ -217,6 +262,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     paddingHorizontal: 20,
+    alignItems: 'center',
   },
   emptyTitle: {
     marginTop: 24,

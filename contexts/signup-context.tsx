@@ -5,6 +5,8 @@ import type { Country } from '@/constants/countries';
 type SignupContextValue = {
   email: string;
   setEmail: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
   accountType: AccountType | null;
   setAccountType: (v: AccountType) => void;
   country: Country;
@@ -13,21 +15,33 @@ type SignupContextValue = {
   setPhone: (v: string) => void;
   pin: string;
   setPin: (v: string) => void;
+  idNumber: string;
+  setIdNumber: (v: string) => void;
+  fullName: string;
+  setFullName: (v: string) => void;
+  nif: string;
+  setNif: (v: string) => void;
 };
 
 const SignupContext = createContext<SignupContextValue | null>(null);
 
 export function SignupProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [country, setCountry] = useState<Country>({ code: 'AO', name: 'Angola' });
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [nif, setNif] = useState('');
 
   const value = useMemo(
     () => ({
       email,
       setEmail,
+      password,
+      setPassword,
       accountType,
       setAccountType,
       country,
@@ -36,8 +50,14 @@ export function SignupProvider({ children }: { children: ReactNode }) {
       setPhone,
       pin,
       setPin,
+      idNumber,
+      setIdNumber,
+      fullName,
+      setFullName,
+      nif,
+      setNif,
     }),
-    [email, accountType, country, phone, pin]
+    [email, password, accountType, country, phone, pin, idNumber, fullName, nif]
   );
 
   return <SignupContext.Provider value={value}>{children}</SignupContext.Provider>;

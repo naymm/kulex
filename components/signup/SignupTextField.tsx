@@ -28,6 +28,7 @@ type Props = {
   | 'autoCapitalize'
   | 'autoCorrect'
   | 'textAlign'
+  | 'editable'
 >;
 
 export function SignupTextField({
@@ -43,6 +44,7 @@ export function SignupTextField({
   autoCapitalize,
   autoCorrect,
   textAlign,
+  editable,
   inputStyle,
 }: Props) {
   const [focused, setFocused] = useState(false);
@@ -65,6 +67,7 @@ export function SignupTextField({
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
           textAlign={textAlign}
+          editable={editable}
           underlineColorAndroid="transparent"
           style={[
             styles.input,

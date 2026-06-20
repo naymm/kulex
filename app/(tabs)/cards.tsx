@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
+import { useAppData } from '@/contexts/AppDataContext';
+import { useActiveAccount } from '@/contexts/AccountContext';
 import {
   Pressable,
   ScrollView,
@@ -13,38 +15,42 @@ import { CardMoreSheet, type CardMoreMenuItem } from '@/components/cards/CardMor
 import { CardWalletCarousel } from '@/components/cards/CardWalletCarousel';
 import { IncreasePlafondSheet } from '@/components/cards/IncreasePlafondSheet';
 import { CARD_MOVEMENTS } from '@/constants/card-movements';
-import { POSTPAID_BLACK_CARD, WALLET_CARDS } from '@/constants/card';
+import { POSTPAID_BLACK_CARD } from '@/constants/card';
 import type { Movement } from '@/constants/movimentos';
 import { buildPostpaidBillSummary } from '@/lib/postpaid-bill';
 import { applyPlafondIncrease, isPlafondAtMaximum } from '@/lib/postpaid-plafond';
 import {
   getPostpaidWalletState,
-  setPostpaidWalletState,
-  type PostpaidWalletState,
+  setPostpaidWalletStateRemote,
 } from '@/lib/postpaid-wallet';
 
 const NAVY = '#1A1A4E';
 
 export default function CardsScreen() {
   const insets = useSafeAreaInsets();
+  const { walletCards, postpaidWallet, refresh } = useAppData();
+  const { activeAccountId } = useActiveAccount();
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [increasePlafondOpen, setIncreasePlafondOpen] = useState(false);
-  const [postpaidWallet, setPostpaidWallet] = useState<PostpaidWalletState>(getPostpaidWalletState);
+  const [postpaidWalletLocal, setPostpaidWalletLocal] = useState(postpaidWallet ?? getPostpaidWalletState());
 
-  const activeCard = WALLET_CARDS[activeCardIndex];
+  const cards = walletCards.length > 0 ? walletCards : [];
+  const activeCard = cards[activeCardIndex];
   const isPrepaid = activeCard?.kind === 'prepaid';
   const isPostpaid = activeCard?.kind === 'postpaid';
 
+  const postpaidWalletState = postpaidWallet ?? postpaidWalletLocal;
+
   const postpaidMeta = useMemo(() => {
-    if (!isPostpaid || activeCard.kind !== 'postpaid') return null;
+    if (!isPostpaid || activeCard?.kind !== 'postpaid') return null;
     return {
       ...activeCard,
-      plafond: postpaidWallet.plafond,
-      available: postpaidWallet.available,
+      plafond: postpaidWalletState.plafond,
+      available: postpaidWalletState.available,
     };
-  }, [activeCard, isPostpaid, postpaidWallet]);
+  }, [activeCard, isPostpaid, postpaidWalletState]);
 
   const plafondAtMaximum = useMemo(() => {
     if (!postpaidMeta) return false;
@@ -56,31 +62,32 @@ export default function CardsScreen() {
     return buildPostpaidBillSummary(postpaidMeta.plafond, postpaidMeta.available);
   }, [postpaidMeta]);
 
-  const walletCards = useMemo(
+  const carouselCards = useMemo(
     () =>
-      WALLET_CARDS.map((card) =>
+      cards.map((card) =>
         card.kind === 'postpaid'
           ? {
               ...card,
-              plafond: postpaidWallet.plafond,
-              available: postpaidWallet.available,
+              plafond: postpaidWalletState.plafond,
+              available: postpaidWalletState.available,
             }
           : card,
       ),
-    [postpaidWallet],
+    [cards, postpaidWalletState],
   );
 
-  const handleIncreasePlafond = (newPlafond: string) => {
+  const handleIncreasePlafond = async (newPlafond: string) => {
     if (!postpaidMeta) return;
 
     const updated = applyPlafondIncrease(
-      postpaidWallet.plafond,
-      postpaidWallet.available,
+      postpaidWalletState.plafond,
+      postpaidWalletState.available,
       newPlafond,
     );
 
-    setPostpaidWallet(updated);
-    setPostpaidWalletState(updated);
+    setPostpaidWalletLocal(updated);
+    await setPostpaidWalletStateRemote(activeAccountId, updated);
+    await refresh();
   };
 
   const handleMoreSelect = (item: CardMoreMenuItem) => {
@@ -117,12 +124,26 @@ export default function CardsScreen() {
           { paddingBottom: Math.max(insets.bottom, 12) + 70 },
         ]}
         showsVerticalScrollIndicator={false}>
+        {cards.length === 0 ? (
+          <View style={styles.emptyCards}>
+            <Text style={styles.emptyCardsTitle}>Ainda não tem cartões</Text>
+            <Text style={styles.emptyCardsSubtitle}>
+              Adicione um cartão pré-pago ou pós-pago para começar.
+            </Text>
+            <Pressable
+              style={styles.emptyCardsBtn}
+              onPress={() => router.push('/cards/adicionar')}>
+              <Text style={styles.emptyCardsBtnText}>Adicionar cartão</Text>
+            </Pressable>
+          </View>
+        ) : (
         <CardWalletCarousel
-          cards={walletCards}
+          cards={carouselCards}
           activeIndex={activeCardIndex}
           onActiveIndexChange={setActiveCardIndex}
           isFrozen={isPrepaid && isFrozen}
         />
+        )}
 
         {postpaidMeta && postpaidBill ? (
           <>
@@ -366,6 +387,34 @@ function CardMovementRow({ item, onPress }: { item: Movement; onPress: () => voi
 }
 
 const styles = StyleSheet.create({
+  emptyCards: {
+    marginTop: 32,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  emptyCardsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: NAVY,
+  },
+  emptyCardsSubtitle: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  emptyCardsBtn: {
+    marginTop: 20,
+    backgroundColor: NAVY,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  emptyCardsBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 15,
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',

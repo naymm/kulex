@@ -34,6 +34,9 @@ export const MY_ACCOUNTS: MyAccount[] = [
 
 export const DEFAULT_SOURCE_ACCOUNT: MyAccountId = 'pessoal';
 
+import { getAppDataStore } from '@/lib/data-store';
+
 export function getMyAccountById(id: string | undefined): MyAccount | undefined {
-  return MY_ACCOUNTS.find((account) => account.id === id);
+  const accounts = getAppDataStore().myAccounts;
+  return accounts.find((account) => account.id === id);
 }

@@ -1,26 +1,51 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { SignupShell } from '@/components/signup/SignupShell';
 import { SignupTextField } from '@/components/signup/SignupTextField';
+import { AuthError } from '@/contexts/AuthContext';
+import { updatePassword } from '@/lib/auth';
 import { isValidPassword } from '@/lib/password';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 export default function ForgotPasswordNewPasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const passwordsMatch = password.length > 0 && password === confirmPassword;
   const isValid = useMemo(
     () => isValidPassword(password) && passwordsMatch,
     [password, passwordsMatch],
   );
 
+  const handleContinue = async () => {
+    if (!isValid) return;
+
+    if (!isSupabaseConfigured) {
+      router.push('/forgot-password/success');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await updatePassword(password);
+      router.push('/forgot-password/success');
+    } catch (error) {
+      const message =
+        error instanceof AuthError ? error.message : 'Não foi possível redefinir a senha.';
+      Alert.alert('Nova senha', message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <SignupShell
       title="Nova senha"
       subtitle="Crie uma nova senha segura para aceder à sua conta Kulex."
-      buttonLabel="Redefinir senha"
-      continueDisabled={!isValid}
-      onContinue={() => router.push('/forgot-password/success')}
+      buttonLabel={isSubmitting ? 'A guardar...' : 'Redefinir senha'}
+      continueDisabled={!isValid || isSubmitting}
+      onContinue={() => void handleContinue()}
       scrollable>
       <SignupTextField
         label="Nova senha"

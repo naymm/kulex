@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
-import { KULEX_ACCOUNTS, type KulexAccount } from '@/constants/accounts';
+import { useActiveAccount } from '@/contexts/AccountContext';
+import type { KulexAccount } from '@/constants/accounts';
 import { ADIANTAMENTO_CREDIT } from '@/constants/credit-line';
 import { getCreditLineAvailableFormatted } from '@/lib/credit-advances';
 import type { PaymentFundingSource } from '@/lib/payment-source';
@@ -118,6 +119,7 @@ export function PaymentSourceSection({
 }: Props) {
   const isDark = variant === 'dark';
   const availableCredit = getCreditLineAvailableFormatted();
+  const { accounts } = useActiveAccount();
 
   return (
     <View style={styles.wrap}>
@@ -135,7 +137,7 @@ export function PaymentSourceSection({
       />
 
       {fundingSource === 'balance'
-        ? KULEX_ACCOUNTS.map((account) => (
+        ? accounts.map((account) => (
             <AccountOption
               key={account.id}
               variant={variant}

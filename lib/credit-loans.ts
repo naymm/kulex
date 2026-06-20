@@ -1,5 +1,5 @@
 import { ADIANTAMENTO_CREDIT, ADIANTAMENTO_CREDIT_ID } from '@/constants/credit-line';
-import { getCreditAdvances, getCreditAdvancesUsedTotal } from '@/lib/credit-advances';
+import { getAppDataStore } from '@/lib/data-store';
 import { formatMoneyAmount } from '@/lib/postpaid-bill';
 
 export type MeusCreditosItem = {
@@ -13,34 +13,12 @@ export type MeusCreditosItem = {
   kind: 'loan' | 'adiantamento';
 };
 
-const BASE_LOANS: MeusCreditosItem[] = [
-  {
-    id: 'maka-zero',
-    kind: 'loan',
-    productTitle: 'Maka Zero',
-    title: 'Maka Zero – 50.000,00 kz',
-    prazo: 'Prazo: 23/07/2026',
-    emFalta: 'Em falta: 25.000,00 kz',
-    progress: 0.55,
-  },
-  {
-    id: 'empreendedor',
-    kind: 'loan',
-    productTitle: 'Empreendedor',
-    title: 'Empreendedor – 650.000,00 kz',
-    prazo: 'Prazo: 12/04/2027',
-    emFalta: 'Em falta: 455.000,00 kz',
-    progress: 0.32,
-    showChevron: true,
-  },
-];
-
 export function getMeusCreditosItems(): MeusCreditosItem[] {
-  const used = getCreditAdvancesUsedTotal();
-  const items = [...BASE_LOANS];
+  const { loans, advances } = getAppDataStore();
+  const items = [...loans];
 
+  const used = advances.filter((a) => !a.settled).reduce((sum, a) => sum + a.amount, 0);
   if (used > 0) {
-    const advances = getCreditAdvances();
     const nextDue = advances[0]?.dueDateLabel ?? '—';
     const progress = Math.min(1, used / ADIANTAMENTO_CREDIT.limit);
 

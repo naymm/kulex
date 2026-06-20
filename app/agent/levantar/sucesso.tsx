@@ -13,6 +13,7 @@ import {
   AddMoneyPrimaryButton,
   AddMoneyShell,
 } from '@/components/add-money/AddMoneyShell';
+import { useActiveAccount } from '@/contexts/AccountContext';
 import { formatWithdrawReference } from '@/lib/agent-withdraw';
 import { registerAgentOperation } from '@/lib/agent';
 import { formatMoneyFromDigitsAsCents } from '@/lib/money';
@@ -47,6 +48,7 @@ export default function AgentLevantarSucessoScreen() {
     reference?: string;
     amount?: string;
   }>();
+  const { activeAccountId } = useActiveAccount();
   const amountDigits = typeof amount === 'string' ? amount : '';
   const referenceDigits = typeof reference === 'string' ? reference : '';
   const referenceFormatted = formatWithdrawReference(referenceDigits);
@@ -67,14 +69,16 @@ export default function AgentLevantarSucessoScreen() {
   const contentTranslateY = useSharedValue(16);
 
   useEffect(() => {
-    registerAgentOperation({
+    if (!activeAccountId) return;
+    void registerAgentOperation(activeAccountId, {
       type: 'cash-out',
       title: 'Cash-out',
       clientName: referenceFormatted,
       amount: `AOA ${amountFormatted}`,
       commission: '+500,00 kz',
+      reference: transactionRef,
     });
-  }, [amountFormatted, referenceFormatted]);
+  }, [activeAccountId, amountFormatted, referenceFormatted, transactionRef]);
 
   useEffect(() => {
     circleScale.value = withSpring(1, { damping: 14, stiffness: 140 });

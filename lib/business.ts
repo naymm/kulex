@@ -1,25 +1,23 @@
-import {
-  BUSINESS_NOTIFICATIONS,
-  VAT_REGIMES,
-  type BusinessNotification,
-  type VatRegime,
-} from '@/constants/business';
+import { VAT_REGIMES, type BusinessNotification, type VatRegime } from '@/constants/business';
+import { getAppDataStore, patchAppDataStore } from '@/lib/data-store';
+import { markBusinessNotificationReadRemote } from '@/lib/api/business';
 import { formatMoneyFromDigitsAsCents } from '@/lib/money';
 
-let notifications = [...BUSINESS_NOTIFICATIONS];
-
 export function getBusinessNotifications(): BusinessNotification[] {
-  return notifications;
+  return getAppDataStore().businessNotifications;
 }
 
 export function getUnreadBusinessNotificationCount(): number {
-  return notifications.filter((item) => !item.read).length;
+  return getBusinessNotifications().filter((item) => !item.read).length;
 }
 
-export function markBusinessNotificationRead(id: string): void {
-  notifications = notifications.map((item) =>
-    item.id === id ? { ...item, read: true } : item,
-  );
+export async function markBusinessNotificationRead(id: string): Promise<void> {
+  patchAppDataStore({
+    businessNotifications: getAppDataStore().businessNotifications.map((item) =>
+      item.id === id ? { ...item, read: true } : item,
+    ),
+  });
+  await markBusinessNotificationReadRemote(id);
 }
 
 export function getVatRegime(regimeId: VatRegime) {

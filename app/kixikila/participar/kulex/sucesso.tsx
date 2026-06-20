@@ -13,9 +13,11 @@ import {
   AddMoneyPrimaryButton,
   AddMoneyShell,
 } from '@/components/add-money/AddMoneyShell';
+import { useKixikilaData } from '@/hooks/useKixikilaData';
 
 export default function PlatformKixikilaSucessoScreen() {
   const { title } = useLocalSearchParams<{ id?: string; title?: string }>();
+  const { refresh } = useKixikilaData();
   const circleScale = useSharedValue(0);
   const circleOpacity = useSharedValue(0);
   const checkScale = useSharedValue(0);
@@ -50,7 +52,15 @@ export default function PlatformKixikilaSucessoScreen() {
   return (
     <AddMoneyShell
       hideHeader
-      footer={<AddMoneyPrimaryButton label="Entendi" onPress={() => router.replace('/kixikila')} />}>
+      footer={
+        <AddMoneyPrimaryButton
+          label="Entendi"
+          onPress={() => {
+            void refresh();
+            router.replace('/kixikila');
+          }}
+        />
+      }>
       <View style={styles.center}>
         <Animated.View style={[styles.checkCircle, circleStyle]}>
           <Animated.View style={checkStyle}>

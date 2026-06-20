@@ -11,11 +11,11 @@ import {
 } from 'react';
 import { AccountSwitchOverlay } from '@/components/menu/AccountSwitchOverlay';
 import {
-  DEFAULT_ACCOUNT_ID,
   getAccountById,
-  KULEX_ACCOUNTS,
   type KulexAccount,
 } from '@/constants/accounts';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchUserAccounts } from '@/lib/api/accounts';
 
 const SWITCH_DURATION_MS = 1100;
 
@@ -24,15 +24,20 @@ type AccountContextValue = {
   activeAccount: KulexAccount;
   activeAccountId: string;
   isSwitchingAccount: boolean;
+  isLoadingAccounts: boolean;
   setActiveAccountId: (id: string) => void;
   switchAccount: (id: string) => void;
+  refreshAccounts: () => Promise<void>;
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
 
 export function AccountProvider({ children }: { children: ReactNode }) {
-  const [activeAccountId, setActiveAccountId] = useState(DEFAULT_ACCOUNT_ID);
+  const { isAuthenticated, isBackendEnabled } = useAuth();
+  const [accounts, setAccounts] = useState<KulexAccount[]>([]);
+  const [activeAccountId, setActiveAccountId] = useState<string>('');
   const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [switchingToAccount, setSwitchingToAccount] = useState<KulexAccount | null>(null);
   const switchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,12 +50,53 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => clearSwitchTimeout, [clearSwitchTimeout]);
 
+  const refreshAccounts = useCallback(async () => {
+    if (!isBackendEnabled || !isAuthenticated) {
+      setAccounts([]);
+      return;
+    }
+
+    setIsLoadingAccounts(true);
+    try {
+      const remoteAccounts = await fetchUserAccounts();
+      setAccounts(remoteAccounts);
+      if (remoteAccounts.length > 0) {
+        setActiveAccountId((current) =>
+          remoteAccounts.some((account) => account.id === current)
+            ? current
+            : remoteAccounts[0].id,
+        );
+      } else {
+        setActiveAccountId('');
+      }
+    } catch {
+      // Mantém contas actuais em caso de erro de rede
+    } finally {
+      setIsLoadingAccounts(false);
+    }
+  }, [isAuthenticated, isBackendEnabled]);
+
+  useEffect(() => {
+    if (!isBackendEnabled) {
+      setAccounts([]);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setAccounts([]);
+      setActiveAccountId('');
+      return;
+    }
+
+    void refreshAccounts();
+  }, [isAuthenticated, isBackendEnabled, refreshAccounts]);
+
   const switchAccount = useCallback(
     (accountId: string) => {
       if (accountId === activeAccountId || isSwitchingAccount) return;
 
       clearSwitchTimeout();
-      const target = getAccountById(accountId);
+      const target = getAccountById(accountId, accounts);
       setSwitchingToAccount(target);
       setIsSwitchingAccount(true);
 
@@ -65,19 +111,28 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         }, 350);
       }, SWITCH_DURATION_MS);
     },
-    [activeAccountId, clearSwitchTimeout, isSwitchingAccount],
+    [accounts, activeAccountId, clearSwitchTimeout, isSwitchingAccount],
   );
 
   const value = useMemo(
     () => ({
-      accounts: KULEX_ACCOUNTS,
-      activeAccount: getAccountById(activeAccountId),
+      accounts,
+      activeAccount: getAccountById(activeAccountId, accounts),
       activeAccountId,
       isSwitchingAccount,
+      isLoadingAccounts,
       setActiveAccountId,
       switchAccount,
+      refreshAccounts,
     }),
-    [activeAccountId, isSwitchingAccount, switchAccount],
+    [
+      accounts,
+      activeAccountId,
+      isSwitchingAccount,
+      isLoadingAccounts,
+      switchAccount,
+      refreshAccounts,
+    ],
   );
 
   return (

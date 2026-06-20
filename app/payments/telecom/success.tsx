@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 import { PaymentSuccessScreen } from '@/components/payments/PaymentSuccessScreen';
-import { finalizeCreditPaymentIfNeeded } from '@/lib/payment-completion';
+import { useCreditPaymentFinalize } from '@/hooks/useCreditPaymentFinalize';
 import { getPaymentFundingSourceLabel } from '@/lib/payment-source';
 
 export default function TelecomPaymentSuccessScreen() {
@@ -25,15 +25,17 @@ export default function TelecomPaymentSuccessScreen() {
     return `${base} Debitado da ${getPaymentFundingSourceLabel('balance', accountId)}.`;
   }, [accountId, paymentSource, providerLabel, value]);
 
+  const finalizeCredit = useCreditPaymentFinalize();
+
   const onComplete = useCallback(() => {
-    finalizeCreditPaymentIfNeeded({
+    finalizeCredit({
       paymentSource,
       value,
       title: providerLabel ? `Pagamento ${providerLabel}` : 'Pagamento de Serviço',
       description: value ?? '',
       category: 'servico',
     });
-  }, [paymentSource, providerLabel, value]);
+  }, [finalizeCredit, paymentSource, providerLabel, value]);
 
   return (
     <PaymentSuccessScreen

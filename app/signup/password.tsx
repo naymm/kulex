@@ -1,18 +1,18 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { SignupShell } from '@/components/signup/SignupShell';
 import { SignupTextField } from '@/components/signup/SignupTextField';
 import { useSignup } from '@/contexts/signup-context';
+import { isValidPassword } from '@/lib/password';
 
 export default function SignupPasswordScreen() {
-  const [password, setPassword] = useState('');
-  const { accountType } = useSignup();
+  const { password, setPassword, accountType } = useSignup();
 
   return (
     <SignupShell
       title="Crie a sua senha"
       buttonLabel="Continue"
+      continueDisabled={!isValidPassword(password)}
       onContinue={() =>
         router.push(accountType === 'business' ? '/signup/pin' : '/signup/personal')
       }

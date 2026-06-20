@@ -18,12 +18,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   filterMovements,
-  MOVEMENTS,
   MOVEMENTS_INITIAL_COUNT,
   MOVEMENTS_LOAD_MORE_COUNT,
   type Movement,
   type MovementFilterType,
 } from '@/constants/movimentos';
+import { useAccountMovements } from '@/hooks/useAccountMovements';
 import { goBackFromOrigin } from '@/lib/navigation';
 import {
   formatFilterDateLabel,
@@ -309,6 +309,7 @@ function MovementRow({ item, onPress }: { item: Movement; onPress: () => void })
 export default function MovimentosScreen() {
   const insets = useSafeAreaInsets();
   const { from } = useLocalSearchParams<{ from?: string }>();
+  const { movements } = useAccountMovements();
   const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState<FilterState>({
     type: 'todos',
@@ -319,8 +320,8 @@ export default function MovimentosScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const filteredMovements = useMemo(
-    () => filterMovements(MOVEMENTS, filter.type, filter.dateFrom, filter.dateTo),
-    [filter]
+    () => filterMovements(movements, filter.type, filter.dateFrom, filter.dateTo),
+    [movements, filter]
   );
 
   const visibleMovements = useMemo(

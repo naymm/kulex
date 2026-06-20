@@ -14,8 +14,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppData } from '@/contexts/AppDataContext';
 import {
-  CREDIT_PRODUCTS,
   CREDIT_PROMO,
   CREDIT_SIMULATOR_PRODUCTS,
   type CreditProduct,
@@ -31,6 +31,8 @@ const PROMO_CARD_IMAGE = require('../../assets/images/card-dinheiro.png');
 
 export default function CreditoScreen() {
   const insets = useSafeAreaInsets();
+  const { creditProducts } = useAppData();
+  const productsList = creditProducts.length > 0 ? creditProducts : [];
   const tileSize = useMemo(() => {
     const screenWidth = Dimensions.get('window').width;
     return (screenWidth - HORIZONTAL_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
@@ -227,7 +229,7 @@ export default function CreditoScreen() {
 
         {tab === 'produtos' ? (
           <View style={styles.grid}>
-            {CREDIT_PRODUCTS.map((product) => (
+            {productsList.map((product) => (
               <CreditTile
                 key={product.id}
                 product={product}

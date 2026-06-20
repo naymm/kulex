@@ -13,6 +13,7 @@ import {
   AddMoneyPrimaryButton,
   AddMoneyShell,
 } from '@/components/add-money/AddMoneyShell';
+import { useActiveAccount } from '@/contexts/AccountContext';
 import { formatAgentPhone } from '@/lib/agent-clients';
 import { registerAgentOperation } from '@/lib/agent';
 import { formatMoneyFromDigitsAsCents } from '@/lib/money';
@@ -47,6 +48,7 @@ export default function AgentCarregarSucessoScreen() {
     clientName?: string;
     amount?: string;
   }>();
+  const { activeAccountId } = useActiveAccount();
   const amountDigits = typeof amount === 'string' ? amount : '';
   const clientPhone = typeof phone === 'string' ? phone : '';
   const name = typeof clientName === 'string' ? clientName : clientPhone;
@@ -65,14 +67,16 @@ export default function AgentCarregarSucessoScreen() {
   const contentTranslateY = useSharedValue(16);
 
   useEffect(() => {
-    registerAgentOperation({
+    if (!activeAccountId) return;
+    void registerAgentOperation(activeAccountId, {
       type: 'cash-in',
       title: 'Cash-in',
       clientName: name,
       amount: `AOA ${amountFormatted}`,
       commission: '+750,00 kz',
+      reference: transactionRef,
     });
-  }, [amountFormatted, name]);
+  }, [activeAccountId, amountFormatted, name, transactionRef]);
 
   useEffect(() => {
     circleScale.value = withSpring(1, { damping: 14, stiffness: 140 });

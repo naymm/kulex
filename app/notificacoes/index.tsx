@@ -1,16 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   PERSONAL_NOTIFICATION_KIND_COLORS,
   PERSONAL_NOTIFICATION_KIND_ICONS,
 } from '@/constants/notifications';
-import {
-  getPersonalNotifications,
-  markPersonalNotificationRead,
-} from '@/lib/notifications';
+import { useAccountNotifications } from '@/hooks/useAccountNotifications';
 import { goBackFromOrigin } from '@/lib/navigation';
 
 const NAVY = '#1A1A4E';
@@ -18,21 +15,18 @@ const NAVY = '#1A1A4E';
 export default function NotificacoesScreen() {
   const insets = useSafeAreaInsets();
   const { from } = useLocalSearchParams<{ from?: string }>();
-  const [items, setItems] = useState(getPersonalNotifications());
+  const { items, unreadCount, refresh, markRead } = useAccountNotifications();
 
   useFocusEffect(
     useCallback(() => {
-      setItems(getPersonalNotifications());
-    }, []),
+      void refresh();
+    }, [refresh]),
   );
 
   const openNotification = (id: string, href?: string) => {
-    markPersonalNotificationRead(id);
-    setItems(getPersonalNotifications());
+    void markRead(id);
     if (href) router.push(href as never);
   };
-
-  const unreadCount = items.filter((item) => !item.read).length;
 
   return (
     <View style={styles.container}>

@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 import { PaymentSuccessScreen } from '@/components/payments/PaymentSuccessScreen';
-import { finalizeCreditPaymentIfNeeded } from '@/lib/payment-completion';
+import { useCreditPaymentFinalize } from '@/hooks/useCreditPaymentFinalize';
 import { getPaymentFundingSourceLabel } from '@/lib/payment-source';
 
 export default function EstadoPaymentSuccessScreen() {
@@ -26,8 +26,10 @@ export default function EstadoPaymentSuccessScreen() {
     return `${base} Debitado da ${getPaymentFundingSourceLabel('balance', accountId)}.`;
   }, [accountId, amount, paymentSource, reference]);
 
+  const finalizeCredit = useCreditPaymentFinalize();
+
   const onComplete = useCallback(() => {
-    finalizeCreditPaymentIfNeeded({
+    finalizeCredit({
       paymentSource,
       amount,
       amountDigits,
@@ -35,7 +37,7 @@ export default function EstadoPaymentSuccessScreen() {
       description: reference ?? '',
       category: 'estado',
     });
-  }, [amount, amountDigits, paymentSource, reference]);
+  }, [amount, amountDigits, finalizeCredit, paymentSource, reference]);
 
   return (
     <PaymentSuccessScreen

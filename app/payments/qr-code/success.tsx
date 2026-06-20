@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 import { PaymentSuccessScreen } from '@/components/payments/PaymentSuccessScreen';
-import { finalizeCreditPaymentIfNeeded } from '@/lib/payment-completion';
+import { useCreditPaymentFinalize } from '@/hooks/useCreditPaymentFinalize';
 import { getPaymentFundingSourceLabel } from '@/lib/payment-source';
 
 export default function QrCodePaymentSuccessScreen() {
@@ -25,15 +25,17 @@ export default function QrCodePaymentSuccessScreen() {
     return `${base} Debitado da ${getPaymentFundingSourceLabel('balance', accountId)}.`;
   }, [accountId, amount, merchant, paymentSource]);
 
+  const finalizeCredit = useCreditPaymentFinalize();
+
   const onComplete = useCallback(() => {
-    finalizeCreditPaymentIfNeeded({
+    finalizeCredit({
       paymentSource,
       amount,
       title: 'Pagamento QR Code',
       description: merchant ?? '',
       category: 'qrcode',
     });
-  }, [amount, merchant, paymentSource]);
+  }, [amount, finalizeCredit, merchant, paymentSource]);
 
   return (
     <PaymentSuccessScreen

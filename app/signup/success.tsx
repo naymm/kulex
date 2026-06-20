@@ -27,6 +27,7 @@ import {
   SIGNUP_WELCOME_FEATURES,
   SIGNUP_WELCOME_PRIVACY,
 } from '@/constants/signup-welcome';
+import { useActiveAccount } from '@/contexts/AccountContext';
 
 const NAVY = '#1A1A4E';
 const GOLD = '#C9A227';
@@ -37,6 +38,7 @@ const APP_ICON = require('../../assets/images/icon.png');
 
 export default function SignupSuccessScreen() {
   const insets = useSafeAreaInsets();
+  const { refreshAccounts } = useActiveAccount();
   const [showWelcome, setShowWelcome] = useState(false);
   const splashProgress = useSharedValue(0);
   const welcomeProgress = useSharedValue(0);
@@ -171,7 +173,10 @@ export default function SignupSuccessScreen() {
             <Pressable
               style={styles.cta}
               accessibilityRole="button"
-              onPress={() => router.replace('/(tabs)')}>
+              onPress={() => {
+                void refreshAccounts();
+                router.replace('/(tabs)');
+              }}>
               <Text style={styles.ctaText}>Continue</Text>
             </Pressable>
           </Animated.View>

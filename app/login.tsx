@@ -8,21 +8,44 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthError, useAuth } from '@/contexts/AuthContext';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 const NAVY = '#1A1A4E';
 const BORDER = '#E6E6E6';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const { signIn, isBackendEnabled } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = () => {
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email.trim() || !password) return;
+
+    if (!isBackendEnabled) {
+      router.replace('/(tabs)');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await signIn(email, password);
+      router.replace('/(tabs)');
+    } catch (error) {
+      const message =
+        error instanceof AuthError ? error.message : 'Não foi possível iniciar sessão.';
+      Alert.alert('Início de sessão', message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -91,11 +114,22 @@ export default function LoginScreen() {
         </View>
 
         <Pressable
-          style={styles.primaryButton}
+          style={[styles.primaryButton, isSubmitting && styles.primaryButtonDisabled]}
           accessibilityRole="button"
-          onPress={handleLogin}>
-          <Text style={styles.primaryButtonText}>Iniciar Sessão</Text>
+          disabled={isSubmitting}
+          onPress={() => void handleLogin()}>
+          {isSubmitting ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.primaryButtonText}>Iniciar Sessão</Text>
+          )}
         </Pressable>
+
+        {!isSupabaseConfigured ? (
+          <Text style={styles.devHint}>
+            Modo demo: backend não configurado — qualquer credencial entra.
+          </Text>
+        ) : null}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Você é um novo usuário? </Text>
@@ -175,6 +209,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  primaryButtonDisabled: {
+    opacity: 0.7,
+  },
+  devHint: {
+    marginTop: 16,
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#9CA3AF',
+    lineHeight: 18,
   },
   footer: {
     flexDirection: 'row',

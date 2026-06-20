@@ -13,19 +13,21 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScoreGauge } from '@/components/scoring/ScoreGauge';
 import {
-  KULEX_USER_SCORE,
+  KULEX_SCORE_MAX,
   SCORE_BANDS,
   SCORE_HISTORY,
   SCORE_SCALE_COLORS,
   SCORING_FACTORS,
   SCORING_IMPROVEMENT_TIPS,
 } from '@/constants/scoring';
+import { useAppData } from '@/contexts/AppDataContext';
 import {
   buildScoringBenefits,
   formatScoreDelta,
   getScoreBand,
   getScoreColor,
   getScoreDelta,
+  getUserScore,
 } from '@/lib/scoring';
 
 const NAVY = '#1A1A4E';
@@ -34,10 +36,14 @@ const SHEET_OVERLAP = 24;
 
 export default function ScoringScreen() {
   const insets = useSafeAreaInsets();
-  const band = getScoreBand(KULEX_USER_SCORE);
+  const { score: scoreData } = useAppData();
+  const userScore = getUserScore();
+  const band = getScoreBand(userScore);
   const delta = getScoreDelta();
-  const benefits = buildScoringBenefits(KULEX_USER_SCORE);
-  const maxHistoryScore = Math.max(...SCORE_HISTORY.map((item) => item.score));
+  const benefits = buildScoringBenefits(userScore);
+  const scoreHistory = scoreData?.history.length ? scoreData.history : SCORE_HISTORY;
+  const scoringFactors = scoreData?.factors.length ? scoreData.factors : SCORING_FACTORS;
+  const maxHistoryScore = Math.max(...scoreHistory.map((item) => item.score), userScore);
   const scrollY = useSharedValue(0);
 
   const collapsedHeight = insets.top + 64;
@@ -103,7 +109,7 @@ export default function ScoringScreen() {
 
           <Animated.View style={[styles.heroContent, heroContentStyle]}>
             <ScoreGauge
-              score={KULEX_USER_SCORE}
+              score={userScore}
               bandLabel={band.label}
               bandColor={band.color}
               width={GAUGE_WIDTH}
@@ -144,7 +150,7 @@ export default function ScoringScreen() {
               O seu score é calculado com base no comportamento financeiro na Kulex.
             </Text>
 
-            {SCORING_FACTORS.map((factor) => {
+            {scoringFactors.map((factor) => {
               const ratio =
                 factor.maxPoints > 0 ? Math.min(1, factor.points / factor.maxPoints) : 0;
               const barColor =
@@ -186,13 +192,13 @@ export default function ScoringScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Evolução</Text>
             <View style={styles.historyCard}>
-              {SCORE_HISTORY.map((entry, index) => {
+              {scoreHistory.map((entry, index) => {
                 const barHeight = Math.max(12, (entry.score / maxHistoryScore) * 80);
-                const isLatest = index === SCORE_HISTORY.length - 1;
+                const isLatest = index === scoreHistory.length - 1;
                 const entryColor = getScoreColor(entry.score);
 
                 return (
-                  <View key={entry.id} style={styles.historyCol}>
+                  <View key={entry.monthLabel} style={styles.historyCol}>
                     <Text
                       style={[
                         styles.historyScore,

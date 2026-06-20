@@ -8,10 +8,10 @@ import {
   KixikilaMetaRow,
   kixikilaDetailStyles,
 } from '@/components/kixikila/KixikilaDetailUi';
+import { useKixikilaDetail } from '@/hooks/useKixikilaDetail';
 import {
   getCommissionModeLabel,
   getKixikilaActions,
-  getKixikilaDetail,
   getKixikilaStatusLabel,
   getNextReceiverLabel,
   isPlatformKixikila,
@@ -21,7 +21,16 @@ import {
 export default function KixikilaDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const detail = getKixikilaDetail(typeof id === 'string' ? id : undefined);
+  const kixikilaId = typeof id === 'string' ? id : undefined;
+  const { detail, isLoading } = useKixikilaDetail(kixikilaId);
+
+  if (isLoading) {
+    return (
+      <View style={kixikilaDetailStyles.container}>
+        <Text style={styles.missing}>A carregar…</Text>
+      </View>
+    );
+  }
 
   if (!detail) {
     return (

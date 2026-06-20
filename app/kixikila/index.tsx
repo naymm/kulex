@@ -14,10 +14,10 @@ import {
   KIXIKILA_ACTIONS,
   KIXIKILA_PROMO,
   getKixikilaStatusLabel,
-  MY_KIXIKILAS,
   type KixikilaAction,
   type MyKixikila,
 } from '@/constants/kixikila';
+import { useKixikilaData } from '@/hooks/useKixikilaData';
 import { goBackFromOrigin } from '@/lib/navigation';
 
 const NAVY = '#1A1A4E';
@@ -27,6 +27,7 @@ const PROMO_CARD_IMAGE = require('../../assets/images/card-kixikila.png');
 export default function KixikilaScreen() {
   const insets = useSafeAreaInsets();
   const { from } = useLocalSearchParams<{ from?: string }>();
+  const { myKixikilas } = useKixikilaData();
 
   return (
     <View style={styles.container}>
@@ -73,7 +74,7 @@ export default function KixikilaScreen() {
           <Text style={styles.sectionTitle}>Minhas Kixikilas</Text>
           <View style={styles.sectionDivider} />
 
-          {MY_KIXIKILAS.map((item) => (
+          {myKixikilas.map((item) => (
             <KixikilaListItem key={item.id} item={item} />
           ))}
         </View>

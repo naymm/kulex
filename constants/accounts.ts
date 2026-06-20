@@ -52,8 +52,22 @@ export const KULEX_ACCOUNTS: KulexAccount[] = [
   },
 ];
 
-export function getAccountById(id: string): KulexAccount {
-  return KULEX_ACCOUNTS.find((account) => account.id === id) ?? KULEX_ACCOUNTS[0];
+const EMPTY_ACCOUNT: KulexAccount = {
+  id: '',
+  kind: 'personal',
+  name: '',
+  accountType: '',
+  shortLabel: '',
+  membershipId: '',
+  balance: '0,00 kz',
+  initials: '—',
+  color: '#1A1A4E',
+};
+
+export function getAccountById(id: string, list?: KulexAccount[]): KulexAccount {
+  const accounts = list ?? KULEX_ACCOUNTS;
+  if (accounts.length === 0) return EMPTY_ACCOUNT;
+  return accounts.find((account) => account.id === id) ?? accounts[0] ?? EMPTY_ACCOUNT;
 }
 
 export function isAgentAccount(account: KulexAccount): boolean {

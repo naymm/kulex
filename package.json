@@ -9,7 +9,13 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "supabase:bootstrap": "bash scripts/bootstrap-supabase.sh",
+    "supabase:reset": "KULEX_SUPABASE_RESET=1 bash scripts/bootstrap-supabase.sh",
+    "supabase:start": "cd docker/supabase && sh run.sh start",
+    "supabase:stop": "cd docker/supabase && sh run.sh stop",
+    "supabase:keys": "bash scripts/sync-env-keys.sh",
+    "db:migrate": "bash scripts/apply-migrations.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

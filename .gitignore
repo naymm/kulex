@@ -31,5 +31,9 @@ yarn-error.*
 .env*.local
 .env
 
+# supabase docker secrets
+docker/supabase/.env
+docker/supabase/.env.old
+
 # typescript
 *.tsbuildinfo

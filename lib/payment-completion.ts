@@ -5,16 +5,19 @@ import {
 } from '@/lib/credit-advances';
 import type { PaymentFundingSource } from '@/lib/payment-source';
 
-export function finalizeCreditPaymentIfNeeded(input: {
-  paymentSource?: string;
-  amount?: string;
-  amountDigits?: string;
-  value?: string;
-  premium?: string;
-  title: string;
-  description: string;
-  category: CreditAdvanceCategory;
-}): void {
+export async function finalizeCreditPaymentIfNeeded(
+  accountId: string,
+  input: {
+    paymentSource?: string;
+    amount?: string;
+    amountDigits?: string;
+    value?: string;
+    premium?: string;
+    title: string;
+    description: string;
+    category: CreditAdvanceCategory;
+  },
+): Promise<void> {
   if (input.paymentSource !== 'credit') return;
 
   const amount = parsePaymentAmountFromFields({
@@ -26,7 +29,7 @@ export function finalizeCreditPaymentIfNeeded(input: {
 
   if (amount <= 0) return;
 
-  registerCreditAdvance({
+  await registerCreditAdvance(accountId, {
     category: input.category,
     title: input.title,
     description: input.description,

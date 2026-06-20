@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 import { PaymentSuccessScreen } from '@/components/payments/PaymentSuccessScreen';
-import { finalizeCreditPaymentIfNeeded } from '@/lib/payment-completion';
+import { useCreditPaymentFinalize } from '@/hooks/useCreditPaymentFinalize';
 import { getPaymentFundingSourceLabel } from '@/lib/payment-source';
 import { withOriginParams } from '@/lib/navigation';
 
@@ -27,15 +27,17 @@ export default function ViagemInsuranceSuccessScreen() {
     return `${base} Debitado da ${getPaymentFundingSourceLabel('balance', accountId)}.`;
   }, [accountId, paymentSource, premium, productLabel]);
 
+  const finalizeCredit = useCreditPaymentFinalize();
+
   const onComplete = useCallback(() => {
-    finalizeCreditPaymentIfNeeded({
+    finalizeCredit({
       paymentSource,
       premium,
       title: productLabel ?? 'Assistência em Viagem',
       description: premium ?? '',
       category: 'seguro',
     });
-  }, [paymentSource, premium, productLabel]);
+  }, [finalizeCredit, paymentSource, premium, productLabel]);
 
   return (
     <PaymentSuccessScreen

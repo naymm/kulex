@@ -7,13 +7,20 @@ import {
 import {
   KULEX_SCORE_MAX,
   KULEX_SCORE_MIN,
-  KULEX_SCORE_PREVIOUS,
-  KULEX_USER_SCORE,
   SCORE_BANDS,
   SCORING_BENEFITS_BASE,
   type ScoreBand,
   type ScoringBenefit,
 } from '@/constants/scoring';
+import { getAppDataStore } from '@/lib/data-store';
+
+export function getUserScore(): number {
+  return getAppDataStore().score?.score ?? 0;
+}
+
+export function getPreviousUserScore(): number {
+  return getAppDataStore().score?.previousScore ?? 0;
+}
 
 export function getScoreBand(score: number): ScoreBand {
   const band = SCORE_BANDS.find((item) => score >= item.min && score <= item.max);
@@ -30,7 +37,7 @@ export function getScoreProgress(score: number): number {
 }
 
 export function getScoreDelta(): number {
-  return KULEX_USER_SCORE - KULEX_SCORE_PREVIOUS;
+  return getUserScore() - getPreviousUserScore();
 }
 
 export function formatScoreDelta(delta: number): string {

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
-import { KULEX_ACCOUNTS, type KulexAccount } from '@/constants/accounts';
+import { useActiveAccount } from '@/contexts/AccountContext';
+import type { KulexAccount } from '@/constants/accounts';
 
 const NAVY = '#1A1A4E';
 
@@ -41,10 +42,12 @@ export function AccountBalancePicker({
   onAccountIdChange,
   validationMessage,
 }: Props) {
+  const { accounts } = useActiveAccount();
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.sectionTitle}>Pagar com</Text>
-      {KULEX_ACCOUNTS.map((account) => (
+      {accounts.map((account) => (
         <AccountOption
           key={account.id}
           account={account}

@@ -21,6 +21,7 @@ import {
   registerOutgoingRemittance,
 } from '@/lib/remessas';
 import { parseRemessaParams } from '@/lib/remessas-route';
+import { useActiveAccount } from '@/contexts/AccountContext';
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -33,6 +34,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default function RemessaSucessoScreen() {
   const params = parseRemessaParams(useLocalSearchParams());
+  const { activeAccountId } = useActiveAccount();
   const trackingRef = useMemo(() => generateRemittanceTrackingRef(), []);
 
   const corridor = useMemo(
@@ -50,7 +52,7 @@ export default function RemessaSucessoScreen() {
     if (!params.corridorId || !params.amountDigits || !params.beneficiaryName || !params.payoutMethod) {
       return;
     }
-    registerOutgoingRemittance({
+    void registerOutgoingRemittance(activeAccountId, {
       beneficiaryName: params.beneficiaryName,
       corridorId: params.corridorId,
       payoutMethod: params.payoutMethod,
@@ -59,6 +61,7 @@ export default function RemessaSucessoScreen() {
       feeMode,
     });
   }, [
+    activeAccountId,
     feeMode,
     params.amountDigits,
     params.beneficiaryName,

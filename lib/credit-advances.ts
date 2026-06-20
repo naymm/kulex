@@ -1,5 +1,12 @@
-import { ADIANTAMENTO_CREDIT } from '@/constants/credit-line';
+import { ADIANTAMENTO_CREDIT, ADIANTAMENTO_CREDIT_ID } from '@/constants/credit-line';
+import { getAppDataStore, patchAppDataStore } from '@/lib/data-store';
+import {
+  createCreditAdvance,
+  settleAllCreditAdvancesRemote,
+  settleCreditAdvanceRemote,
+} from '@/lib/api/credit';
 import { formatMoneyAmount, parseMoneyAmount } from '@/lib/postpaid-bill';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 export type CreditAdvanceCategory =
   | 'servico'
@@ -29,25 +36,12 @@ export type CreditAdvance = {
   settled: boolean;
 };
 
-let advances: CreditAdvance[] = [];
-
-function formatDueDate(date: Date): { label: string; iso: string } {
-  const iso = date.toISOString().slice(0, 10);
-  const label = date.toLocaleDateString('pt-PT', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  return { label, iso };
-}
-
 export function getCreditAdvances(): CreditAdvance[] {
-  return advances.filter((item) => !item.settled).map((item) => ({ ...item }));
+  return getAppDataStore().advances.filter((item) => !item.settled);
 }
 
 export function getCreditAdvanceById(id: string): CreditAdvance | null {
-  const advance = advances.find((item) => item.id === id && !item.settled);
-  return advance ? { ...advance } : null;
+  return getCreditAdvances().find((item) => item.id === id) ?? null;
 }
 
 export function formatAdvanceCreatedLabel(isoDate: string): string {
@@ -83,35 +77,29 @@ export function canPayWithCredit(amount: number): boolean {
   return amount > 0 && amount <= getCreditLineAvailable();
 }
 
-export function registerCreditAdvance(input: {
-  category: CreditAdvanceCategory;
-  title: string;
-  description: string;
-  amount: number;
-}): CreditAdvance {
-  const due = new Date();
-  due.setDate(due.getDate() + ADIANTAMENTO_CREDIT.termDays);
-  const { label, iso } = formatDueDate(due);
+export async function registerCreditAdvance(
+  accountId: string,
+  input: {
+    category: CreditAdvanceCategory;
+    title: string;
+    description: string;
+    amount: number;
+  },
+): Promise<CreditAdvance> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Backend não configurado');
+  }
 
-  const advance: CreditAdvance = {
-    id: `advance-${Date.now()}`,
-    category: input.category,
-    title: input.title,
-    description: input.description,
-    amount: input.amount,
-    amountFormatted: formatMoneyAmount(input.amount),
-    createdAt: new Date().toISOString(),
-    dueDateLabel: label,
-    dueIsoDate: iso,
-    settled: false,
-  };
+  const advance = await createCreditAdvance(accountId, {
+    ...input,
+    termDays: ADIANTAMENTO_CREDIT.termDays,
+  });
 
-  advances = [advance, ...advances];
+  patchAppDataStore({
+    advances: [advance, ...getAppDataStore().advances],
+  });
+
   return advance;
-}
-
-export function resetCreditAdvances(): void {
-  advances = [];
 }
 
 export type AdvanceSettlementMode = 'single' | 'all';
@@ -139,37 +127,33 @@ export function getAdvanceSettlementTitle(
   return getCreditAdvanceById(advanceId ?? '')?.title ?? 'Liquidar adiantamento';
 }
 
-export function settleCreditAdvance(id: string): boolean {
-  const exists = advances.some((item) => item.id === id && !item.settled);
-  if (!exists) return false;
-
-  advances = advances.map((item) =>
-    item.id === id ? { ...item, settled: true } : item,
-  );
-  return true;
-}
-
-export function settleAllCreditAdvances(): number {
-  const pending = getCreditAdvances();
-  if (pending.length === 0) return 0;
-
-  const pendingIds = new Set(pending.map((item) => item.id));
-  advances = advances.map((item) =>
-    pendingIds.has(item.id) ? { ...item, settled: true } : item,
-  );
-  return pending.length;
-}
-
-export function executeAdvanceSettlement(
+export async function executeAdvanceSettlement(
+  accountId: string,
   mode: AdvanceSettlementMode,
   advanceId?: string,
-): { success: boolean; settledCount: number } {
+): Promise<{ success: boolean; settledCount: number }> {
+  if (!isSupabaseConfigured) {
+    return { success: false, settledCount: 0 };
+  }
+
   if (mode === 'all') {
-    const settledCount = settleAllCreditAdvances();
+    const settledCount = await settleAllCreditAdvancesRemote(accountId);
+    if (settledCount > 0) {
+      patchAppDataStore({
+        advances: getAppDataStore().advances.map((a) => ({ ...a, settled: true })),
+      });
+    }
     return { success: settledCount > 0, settledCount };
   }
 
-  const success = settleCreditAdvance(advanceId ?? '');
+  const success = await settleCreditAdvanceRemote(advanceId ?? '');
+  if (success) {
+    patchAppDataStore({
+      advances: getAppDataStore().advances.map((a) =>
+        a.id === advanceId ? { ...a, settled: true } : a,
+      ),
+    });
+  }
   return { success, settledCount: success ? 1 : 0 };
 }
 
@@ -206,4 +190,8 @@ export function parsePaymentAmountFromFields(input: {
   }
 
   return 0;
+}
+
+export function isAdiantamentoCreditId(id: string): boolean {
+  return id === ADIANTAMENTO_CREDIT_ID;
 }

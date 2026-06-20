@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AddMoneyShell } from '@/components/add-money/AddMoneyShell';
 import { NumericKeypad, PinDots } from '@/components/send-money/NumericKeypad';
+import { useActiveAccount } from '@/contexts/AccountContext';
 import {
   executeAdvanceSettlement,
   type AdvanceSettlementMode,
@@ -17,17 +18,23 @@ export default function LiquidarAdiantamentoPinScreen() {
     amountDigits?: string;
     title?: string;
   }>();
+  const { activeAccountId } = useActiveAccount();
   const [pin, setPin] = useState('');
-  const settlementMode: AdvanceSettlementMode = mode === 'all' ? 'all' : 'single';
   const resolvedAdvanceId = typeof advanceId === 'string' ? advanceId : '';
+
+  const settlementMode: AdvanceSettlementMode = mode === 'all' ? 'all' : 'single';
 
   const addDigit = (digit: string) => {
     if (pin.length >= 4) return;
     const next = pin + digit;
     setPin(next);
     if (next.length === 4) {
-      setTimeout(() => {
-        const result = executeAdvanceSettlement(settlementMode, resolvedAdvanceId);
+      setTimeout(async () => {
+        const result = await executeAdvanceSettlement(
+          activeAccountId,
+          settlementMode,
+          resolvedAdvanceId,
+        );
         if (!result.success) return;
 
         router.push({

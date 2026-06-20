@@ -9,7 +9,7 @@ import { HomeMoreMenu } from '@/components/home/HomeMoreMenu';
 import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
 import { useActiveAccount } from '@/contexts/AccountContext';
 import { useCollapsibleHomeHeader } from '@/hooks/useCollapsibleHomeHeader';
-import { getUnreadPersonalNotificationCount } from '@/lib/notifications';
+import { getUnreadPersonalNotificationCount, refreshPersonalNotifications } from '@/lib/notifications';
 
 const HERO_HEIGHT = 118;
 
@@ -42,7 +42,7 @@ const transactions = [
 
 export function PersonalHomeScreen() {
   const insets = useSafeAreaInsets();
-  const { activeAccount } = useActiveAccount();
+  const { activeAccount, activeAccountId } = useActiveAccount();
   const [showBalance, setShowBalance] = useState(true);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(
@@ -65,8 +65,8 @@ export function PersonalHomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setUnreadNotifications(getUnreadPersonalNotificationCount());
-    }, []),
+      void refreshPersonalNotifications(activeAccountId).then(setUnreadNotifications);
+    }, [activeAccountId]),
   );
 
   const balanceDisplay = showBalance ? activeAccount.balance : '•••••••• kz';

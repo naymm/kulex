@@ -14,7 +14,7 @@ import { AccountAvatar, AccountSwitcherSheet } from '@/components/menu/AccountSw
 import { MenuRow } from '@/components/menu/MenuRow';
 import { getMenuSectionsForAccount, type MenuItem } from '@/constants/menu';
 import { useActiveAccount } from '@/contexts/AccountContext';
-import { getNotificationsRouteForAccount, getUnreadPersonalNotificationCount } from '@/lib/notifications';
+import { getNotificationsRouteForAccount, refreshPersonalNotifications } from '@/lib/notifications';
 import { getUnreadBusinessNotificationCount } from '@/lib/business';
 import { getUnreadNotificationCount as getUnreadAgentNotificationCount } from '@/lib/agent';
 import { logoutToLogin, pushFromMenu } from '@/lib/navigation';
@@ -49,8 +49,8 @@ export default function MenuScreen() {
         setUnreadNotifications(getUnreadAgentNotificationCount());
         return;
       }
-      setUnreadNotifications(getUnreadPersonalNotificationCount());
-    }, [activeAccount.kind]),
+      void refreshPersonalNotifications(activeAccountId).then(setUnreadNotifications);
+    }, [activeAccount.kind, activeAccountId]),
   );
 
   const handleToggle = (key: keyof ToggleState, value: boolean) => {
