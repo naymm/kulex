@@ -32,6 +32,8 @@ export type PersonalDataProfile = {
   kycStatus: string;
 };
 
+import { getAppDataStore } from '@/lib/data-store';
+
 const PERSONAL_DATA_BY_ACCOUNT: Record<string, PersonalDataProfile> = {
   'naym-personal': {
     fullName: 'Naym Mupoia',
@@ -90,8 +92,37 @@ const PERSONAL_DATA_BY_ACCOUNT: Record<string, PersonalDataProfile> = {
   },
 };
 
+const EMPTY_PERSONAL_DATA: PersonalDataProfile = {
+  fullName: '—',
+  nickname: '—',
+  accountType: '—',
+  membershipId: '—',
+  initials: '—',
+  color: '#1A1A4E',
+  idDocumentType: '—',
+  idNumber: '—',
+  nif: '—',
+  phone: '—',
+  email: '—',
+  address: '—',
+  birthDate: '—',
+  gender: '—',
+  nationality: '—',
+  kycStatus: 'Pendente',
+};
+
 export function getPersonalData(accountId: string): PersonalDataProfile {
-  return PERSONAL_DATA_BY_ACCOUNT[accountId] ?? PERSONAL_DATA_BY_ACCOUNT['naym-personal'];
+  const remoteProfile = getAppDataStore().personalProfile;
+  if (remoteProfile) {
+    return remoteProfile;
+  }
+  if (PERSONAL_DATA_BY_ACCOUNT[accountId]) {
+    return PERSONAL_DATA_BY_ACCOUNT[accountId];
+  }
+  if (accountId.includes('-') && accountId.length > 20) {
+    return EMPTY_PERSONAL_DATA;
+  }
+  return PERSONAL_DATA_BY_ACCOUNT['naym-personal'];
 }
 
 export function getPersonalDataSections(accountId: string): PersonalDataSection[] {

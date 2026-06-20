@@ -22,6 +22,7 @@ import {
   fetchOutgoingRemittances,
   fetchRemittanceCorridors,
 } from '@/lib/api/remessas';
+import { fetchPersonalDataProfile } from '@/lib/api/profile';
 import { fetchUserScore } from '@/lib/api/scoring';
 import { fetchContacts, fetchMyAccounts } from '@/lib/api/transfers';
 import {
@@ -41,7 +42,7 @@ const AppDataContext = createContext<AppDataContextValue | null>(null);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, session } = useAuth();
-  const { activeAccountId, activeAccount } = useActiveAccount();
+  const { activeAccountId, activeAccount, isLoadingAccounts } = useActiveAccount();
   const userId = session?.user?.id;
   const [snapshot, setSnapshot] = useState<AppDataStore>(getAppDataStore());
   const [isLoading, setIsLoading] = useState(false);
@@ -53,9 +54,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (isLoadingAccounts || !activeAccountId) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const [
+        personalProfile,
         score,
         creditProducts,
         loans,
@@ -72,6 +78,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         agentNotifications,
         businessNotifications,
       ] = await Promise.all([
+        fetchPersonalDataProfile(activeAccountId, {
+          accountType: activeAccount.accountType,
+          membershipId: activeAccount.membershipId,
+          initials: activeAccount.initials,
+          color: activeAccount.color,
+        }),
         fetchUserScore(userId),
         fetchCreditProducts(),
         fetchAccountLoans(activeAccountId),
@@ -98,6 +110,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       ]);
 
       patchAppDataStore({
+        personalProfile,
         score,
         creditProducts,
         loans,
@@ -120,7 +133,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [activeAccount.kind, activeAccountId, isAuthenticated, userId]);
+  }, [
+    activeAccount.accountType,
+    activeAccount.color,
+    activeAccount.initials,
+    activeAccount.membershipId,
+    activeAccount.kind,
+    activeAccountId,
+    isAuthenticated,
+    isLoadingAccounts,
+    userId,
+  ]);
 
   useEffect(() => {
     void refresh();

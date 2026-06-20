@@ -33,7 +33,7 @@ type AccountContextValue = {
 const AccountContext = createContext<AccountContextValue | null>(null);
 
 export function AccountProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isBackendEnabled } = useAuth();
+  const { isAuthenticated, isBackendEnabled, session } = useAuth();
   const [accounts, setAccounts] = useState<KulexAccount[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<string>('');
   const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
@@ -82,14 +82,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !session?.user?.id) {
       setAccounts([]);
       setActiveAccountId('');
       return;
     }
 
     void refreshAccounts();
-  }, [isAuthenticated, isBackendEnabled, refreshAccounts]);
+  }, [isAuthenticated, isBackendEnabled, refreshAccounts, session?.user?.id]);
 
   const switchAccount = useCallback(
     (accountId: string) => {

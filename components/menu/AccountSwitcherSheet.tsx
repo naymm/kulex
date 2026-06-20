@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { KulexAccount } from '@/constants/accounts';
+import { formatDisplayName } from '@/lib/format-name';
 
 const NAVY = '#1A1A4E';
 const GOLD = '#C9A227';
@@ -107,7 +108,9 @@ export function AccountSwitcherSheet({
                 }}>
                 <AccountAvatar account={account} size={48} style={styles.rowAvatar} />
                 <View style={styles.accountText}>
-                  <Text style={styles.accountName}>{account.name}</Text>
+                  <Text style={styles.accountName} numberOfLines={1}>
+                    {formatDisplayName(account.name, account.kind)}
+                  </Text>
                   <Text style={styles.accountType}>{account.accountType}</Text>
                   <Text style={styles.accountBalance}>{account.balance}</Text>
                 </View>

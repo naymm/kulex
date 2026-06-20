@@ -2,10 +2,12 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text } from 'react-native';
 import { OtpCodeField } from '@/components/signup/OtpCodeField';
+import { OtpResendButton } from '@/components/signup/OtpResendButton';
 import { SignupShell } from '@/components/signup/SignupShell';
 import { AuthError } from '@/contexts/AuthContext';
 import { useForgotPassword } from '@/contexts/forgot-password-context';
 import { getCountryDialCode } from '@/constants/country-dial-codes';
+import { useOtpResendCooldown } from '@/hooks/useOtpResendCooldown';
 import {
   sendPasswordRecoveryOtp,
   sendPhoneRecoveryOtp,
@@ -32,10 +34,18 @@ export default function ForgotPasswordOtpScreen() {
   const { method, email, phone, phoneE164, setPhoneE164, country } = useForgotPassword();
   const [code, setCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [isResending, setIsResending] = useState(false);
+  const { secondsLeft, canResend, restart } = useOtpResendCooldown();
 
   const destination =
     method === 'email' ? maskEmail(email) : maskPhone(country.code, phone);
   const isValid = useMemo(() => code.replace(/\D/g, '').length === 6, [code]);
+
+  const handleCodeChange = (value: string) => {
+    setCode(value);
+    if (otpError) setOtpError(null);
+  };
 
   const handleVerify = async () => {
     if (!isValid) return;
@@ -46,6 +56,7 @@ export default function ForgotPasswordOtpScreen() {
     }
 
     setIsSubmitting(true);
+    setOtpError(null);
     try {
       if (method === 'email') {
         await verifyPasswordRecoveryOtp(email, code);
@@ -55,17 +66,21 @@ export default function ForgotPasswordOtpScreen() {
       router.push('/forgot-password/new-password');
     } catch (error) {
       const message =
-        error instanceof AuthError ? error.message : 'Código inválido ou expirado.';
-      Alert.alert('Verificação', message);
+        error instanceof AuthError ? error.message : 'Código inválido.';
+      setOtpError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleResend = async () => {
+    if (!canResend || isResending) return;
+
     setCode('');
+    setOtpError(null);
     if (!isSupabaseConfigured) return;
 
+    setIsResending(true);
     try {
       if (method === 'email') {
         await sendPasswordRecoveryOtp(email);
@@ -73,11 +88,14 @@ export default function ForgotPasswordOtpScreen() {
         const e164 = await sendPhoneRecoveryOtp(country.code, phone);
         setPhoneE164(e164);
       }
+      restart();
       Alert.alert('Código reenviado', 'Verifique o seu e-mail ou SMS.');
     } catch (error) {
       const message =
         error instanceof AuthError ? error.message : 'Não foi possível reenviar o código.';
       Alert.alert('Recuperação de senha', message);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -89,14 +107,14 @@ export default function ForgotPasswordOtpScreen() {
       continueDisabled={!isValid || isSubmitting}
       onContinue={() => void handleVerify()}
       scrollable>
-      <OtpCodeField value={code} onChange={setCode} />
+      <OtpCodeField value={code} onChange={handleCodeChange} error={otpError ?? undefined} />
 
-      <Pressable
-        style={styles.resend}
-        accessibilityRole="button"
-        onPress={() => void handleResend()}>
-        <Text style={styles.resendText}>Reenviar código</Text>
-      </Pressable>
+      <OtpResendButton
+        secondsLeft={secondsLeft}
+        canResend={canResend}
+        isResending={isResending}
+        onPress={() => void handleResend()}
+      />
 
       <Pressable
         style={styles.altLink}
@@ -109,15 +127,6 @@ export default function ForgotPasswordOtpScreen() {
 }
 
 const styles = StyleSheet.create({
-  resend: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  resendText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A4E',
-  },
   altLink: {
     marginTop: 16,
     alignItems: 'center',

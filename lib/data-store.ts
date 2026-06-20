@@ -1,3 +1,4 @@
+import type { PersonalDataProfile } from '@/constants/personal-data';
 import type { CreditProduct } from '@/constants/credit';
 import type { WalletCard } from '@/constants/card';
 import type { Contact } from '@/constants/contacts';
@@ -16,6 +17,7 @@ import type { PostpaidWalletState } from '@/lib/postpaid-wallet';
 import type { AgentClient } from '@/lib/agent-clients';
 
 export type AppDataStore = {
+  personalProfile: PersonalDataProfile | null;
   score: UserScoreData | null;
   creditProducts: CreditProduct[];
   loans: MeusCreditosItem[];
@@ -34,6 +36,7 @@ export type AppDataStore = {
 };
 
 const emptyStore: AppDataStore = {
+  personalProfile: null,
   score: null,
   creditProducts: [],
   loans: [],

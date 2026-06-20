@@ -8,41 +8,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeMoreMenu } from '@/components/home/HomeMoreMenu';
 import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
 import { useActiveAccount } from '@/contexts/AccountContext';
+import { useAppData } from '@/contexts/AppDataContext';
 import { useCollapsibleHomeHeader } from '@/hooks/useCollapsibleHomeHeader';
+import { useAccountMovements } from '@/hooks/useAccountMovements';
 import { getUnreadPersonalNotificationCount, refreshPersonalNotifications } from '@/lib/notifications';
 
 const HERO_HEIGHT = 118;
 
-const transactions = [
-  {
-    id: 1,
-    type: 'income',
-    name: 'Transferência recebida',
-    description: 'João Silva',
-    amount: '+15.000,00 kz',
-    date: '25 Mai',
-  },
-  {
-    id: 2,
-    type: 'expense',
-    name: 'Pagamento',
-    description: 'Supermercado',
-    amount: '-3.250,80 kz',
-    date: '24 Mai',
-  },
-  {
-    id: 3,
-    type: 'expense',
-    name: 'Transferência enviada',
-    description: 'Maria Santos',
-    amount: '-8.500,00 kz',
-    date: '23 Mai',
-  },
-];
-
 export function PersonalHomeScreen() {
   const insets = useSafeAreaInsets();
-  const { activeAccount, activeAccountId } = useActiveAccount();
+  const { activeAccount, activeAccountId, isLoadingAccounts } = useActiveAccount();
+  const { isLoading: isAppDataLoading } = useAppData();
+  const { movements, isLoading: isMovementsLoading } = useAccountMovements();
   const [showBalance, setShowBalance] = useState(true);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(
@@ -70,6 +47,8 @@ export function PersonalHomeScreen() {
   );
 
   const balanceDisplay = showBalance ? activeAccount.balance : '•••••••• kz';
+  const recentMovements = movements.slice(0, 3);
+  const isLoadingHome = isLoadingAccounts || isAppDataLoading;
 
   const openMoreMenu = () => {
     moreButtonRef.current?.measureInWindow((x, y, width, height) => {
@@ -225,31 +204,36 @@ export function PersonalHomeScreen() {
           <View style={styles.transactionsSection}>
             <Text style={styles.sectionTitle}>Movimentos Recentes</Text>
 
-            {transactions.map((transaction) => (
-              <View key={transaction.id} style={styles.transactionItem}>
-                <View style={styles.transactionIcon}>
-                  <Ionicons
-                    name={transaction.type === 'income' ? 'arrow-down' : 'arrow-up'}
-                    size={20}
-                    color={transaction.type === 'income' ? '#22c55e' : '#ef4444'}
-                  />
+            {isLoadingHome || isMovementsLoading ? (
+              <Text style={styles.transactionsEmpty}>A carregar movimentos...</Text>
+            ) : recentMovements.length === 0 ? (
+              <Text style={styles.transactionsEmpty}>Ainda não tem movimentos nesta conta.</Text>
+            ) : (
+              recentMovements.map((movement) => (
+                <View key={movement.id} style={styles.transactionItem}>
+                  <View style={styles.transactionIcon}>
+                    <Ionicons
+                      name={movement.type === 'credit' ? 'arrow-down' : 'arrow-up'}
+                      size={20}
+                      color={movement.type === 'credit' ? '#22c55e' : '#ef4444'}
+                    />
+                  </View>
+                  <View style={styles.transactionInfo}>
+                    <Text style={styles.transactionName}>{movement.title}</Text>
+                  </View>
+                  <View style={styles.transactionRight}>
+                    <Text
+                      style={[
+                        styles.transactionAmount,
+                        { color: movement.type === 'credit' ? '#22c55e' : '#1a1a4e' },
+                      ]}>
+                      {movement.amount}
+                    </Text>
+                    <Text style={styles.transactionDate}>{movement.dateLabel}</Text>
+                  </View>
                 </View>
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.transactionName}>{transaction.name}</Text>
-                  <Text style={styles.transactionDescription}>{transaction.description}</Text>
-                </View>
-                <View style={styles.transactionRight}>
-                  <Text
-                    style={[
-                      styles.transactionAmount,
-                      { color: transaction.type === 'income' ? '#22c55e' : '#1a1a4e' },
-                    ]}>
-                    {transaction.amount}
-                  </Text>
-                  <Text style={styles.transactionDate}>{transaction.date}</Text>
-                </View>
-              </View>
-            ))}
+              ))
+            )}
           </View>
         </Animated.View>
       </Animated.ScrollView>
@@ -466,6 +450,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a1a4e',
     marginBottom: 16,
+  },
+  transactionsEmpty: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#6B7280',
+    paddingHorizontal: 4,
   },
   transactionItem: {
     flexDirection: 'row',

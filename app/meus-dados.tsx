@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AccountAvatar } from '@/components/menu/AccountSwitcherSheet';
 import { getPersonalData, getPersonalDataSections, type PersonalDataField } from '@/constants/personal-data';
 import { useActiveAccount } from '@/contexts/AccountContext';
+import { useAppData } from '@/contexts/AppDataContext';
 import { goBackFromOrigin, withOriginParams } from '@/lib/navigation';
 
 const NAVY = '#1A1A4E';
@@ -28,6 +29,7 @@ export default function MeusDadosScreen() {
   const insets = useSafeAreaInsets();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const { activeAccount, activeAccountId } = useActiveAccount();
+  useAppData();
   const personalData = getPersonalData(activeAccountId);
   const personalDataSections = getPersonalDataSections(activeAccountId);
 

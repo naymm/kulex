@@ -54,7 +54,11 @@ patch_env "SUPABASE_PUBLIC_URL" "$LOCAL_URL"
 patch_env "API_EXTERNAL_URL" "$LOCAL_URL"
 patch_env "SITE_URL" "http://localhost:3000"
 patch_env "ENABLE_EMAIL_AUTOCONFIRM" "true"
-patch_env "ENABLE_PHONE_AUTOCONFIRM" "true"
+if grep -qE '^SMS_PROVIDER=(twilio|twilio_verify|messagebird|textlocal|vonage)' .env 2>/dev/null; then
+  patch_env "ENABLE_PHONE_AUTOCONFIRM" "false"
+else
+  patch_env "ENABLE_PHONE_AUTOCONFIRM" "true"
+fi
 patch_env "DISABLE_SIGNUP" "false"
 
 rm -f .env.bak

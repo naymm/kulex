@@ -13,6 +13,8 @@ type SignupContextValue = {
   setCountry: (v: Country) => void;
   phone: string;
   setPhone: (v: string) => void;
+  phoneE164: string;
+  setPhoneE164: (v: string) => void;
   pin: string;
   setPin: (v: string) => void;
   idNumber: string;
@@ -31,6 +33,7 @@ export function SignupProvider({ children }: { children: ReactNode }) {
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [country, setCountry] = useState<Country>({ code: 'AO', name: 'Angola' });
   const [phone, setPhone] = useState('');
+  const [phoneE164, setPhoneE164] = useState('');
   const [pin, setPin] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const [fullName, setFullName] = useState('');
@@ -48,6 +51,8 @@ export function SignupProvider({ children }: { children: ReactNode }) {
       setCountry,
       phone,
       setPhone,
+      phoneE164,
+      setPhoneE164,
       pin,
       setPin,
       idNumber,
@@ -57,7 +62,7 @@ export function SignupProvider({ children }: { children: ReactNode }) {
       nif,
       setNif,
     }),
-    [email, password, accountType, country, phone, pin, idNumber, fullName, nif]
+    [email, password, accountType, country, phone, phoneE164, pin, idNumber, fullName, nif]
   );
 
   return <SignupContext.Provider value={value}>{children}</SignupContext.Provider>;

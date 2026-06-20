@@ -18,6 +18,7 @@ import { getNotificationsRouteForAccount, refreshPersonalNotifications } from '@
 import { getUnreadBusinessNotificationCount } from '@/lib/business';
 import { getUnreadNotificationCount as getUnreadAgentNotificationCount } from '@/lib/agent';
 import { logoutToLogin, pushFromMenu } from '@/lib/navigation';
+import { formatDisplayName } from '@/lib/format-name';
 
 const NAVY = '#1A1A4E';
 const GOLD = '#C9A227';
@@ -98,7 +99,9 @@ export default function MenuScreen() {
             onPress={() => setAccountSwitcherOpen(true)}>
             <AccountAvatar account={activeAccount} size={52} />
             <View style={styles.profileText}>
-              <Text style={styles.userName}>{activeAccount.name}</Text>
+              <Text style={styles.userName} numberOfLines={1}>
+                {formatDisplayName(activeAccount.name, activeAccount.kind)}
+              </Text>
               <View style={styles.accountTypeRow}>
                 <Text style={styles.accountType}>{activeAccount.accountType}</Text>
                 <View style={styles.switchBadge}>
