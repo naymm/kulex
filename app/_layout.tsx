@@ -20,6 +20,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="login" />
+        <Stack.Screen name="forgot-password" />
         <Stack.Screen name="signup" />
         <Stack.Screen name="send-money" />
         <Stack.Screen name="add-money" />

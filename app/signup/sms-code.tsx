@@ -1,12 +1,7 @@
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
+import { OtpCodeField } from '@/components/signup/OtpCodeField';
 import { SignupShell } from '@/components/signup/SignupShell';
 import { useSignup } from '@/contexts/signup-context';
 import { getCountryDialCode } from '@/constants/country-dial-codes';
@@ -21,8 +16,6 @@ function maskPhone(countryCode: string, phone: string) {
 export default function SignupSmsCodeScreen() {
   const { country, phone } = useSignup();
   const [code, setCode] = useState('');
-  const inputRef = useRef<TextInput>(null);
-  const digits = code.replace(/\D/g, '').slice(0, 6);
 
   return (
     <SignupShell
@@ -34,22 +27,7 @@ export default function SignupSmsCodeScreen() {
         Insira o código de segurança que enviamos para {maskPhone(country.code, phone)}.
       </Text>
 
-      <Pressable style={styles.otpRow} onPress={() => inputRef.current?.focus()}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <View key={i} style={styles.otpBox}>
-            <Text style={styles.otpDigit}>{digits[i] ?? ''}</Text>
-          </View>
-        ))}
-      </Pressable>
-      <TextInput
-        ref={inputRef}
-        value={digits}
-        onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))}
-        keyboardType="number-pad"
-        maxLength={6}
-        style={styles.hiddenInput}
-        autoFocus
-      />
+      <OtpCodeField value={code} onChange={setCode} />
 
       <Pressable style={styles.altLink} accessibilityRole="button" onPress={() => router.back()}>
         <Text style={styles.altText}>Tentar de outra forma</Text>
@@ -64,27 +42,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: '#6B7280',
     marginBottom: 28,
-  },
-  otpRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  otpBox: {
-    flex: 1,
-    maxWidth: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#EEF0F8',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  otpDigit: { fontSize: 20, fontWeight: '600', color: '#111827' },
-  hiddenInput: {
-    position: 'absolute',
-    opacity: 0,
-    width: 1,
-    height: 1,
   },
   altLink: { marginTop: 28, alignItems: 'center' },
   altText: {

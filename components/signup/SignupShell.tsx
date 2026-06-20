@@ -45,8 +45,9 @@ export const signupPageStyles = StyleSheet.create({
 });
 
 type SignupShellProps = {
-  title: string;
+  title?: string;
   subtitle?: string;
+  hideHeader?: boolean;
   children?: ReactNode;
   footer?: ReactNode;
   buttonLabel?: string;
@@ -70,6 +71,7 @@ export function SignupBackButton() {
 export function SignupShell({
   title,
   subtitle,
+  hideHeader = false,
   children,
   footer,
   buttonLabel,
@@ -80,10 +82,12 @@ export function SignupShell({
 }: SignupShellProps) {
   const insets = useSafeAreaInsets();
 
-  const body = (
+  const body = hideHeader ? (
+    <View style={[styles.body, styles.bodyNoHeader, contentStyle]}>{children}</View>
+  ) : (
     <>
       <SignupBackButton />
-      <Text style={styles.title}>{title}</Text>
+      {title ? <Text style={styles.title}>{title}</Text> : null}
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       <View style={[styles.body, contentStyle]}>{children}</View>
     </>
@@ -178,6 +182,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   body: { marginTop: 28, flex: 1 },
+  bodyNoHeader: { marginTop: 0 },
   cta: {
     height: 56,
     borderRadius: 28,

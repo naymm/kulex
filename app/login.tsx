@@ -85,7 +85,7 @@ export default function LoginScreen() {
           <Pressable
             style={styles.forgotWrap}
             accessibilityRole="button"
-            onPress={() => {}}>
+            onPress={() => router.push('/forgot-password')}>
             <Text style={styles.forgotText}>Esqueceu a senha?</Text>
           </Pressable>
         </View>
